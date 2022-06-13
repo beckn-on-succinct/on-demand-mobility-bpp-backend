@@ -83,4 +83,19 @@ public interface Trip extends Model, GeoLocation {
     public void rate();
     public void allocate();
 
+    public Double getPrice();
+    public void setPrice (Double price);
+
+    public Double getIGst();
+    public void setIGst(Double gst);
+
+    public Double getCGst();
+    public void setCGst(Double gst);
+
+    public Double getSGst();
+    public void setSGst(Double gst);
+
+    //* This is what is paid by the client.
+    public Double getSellingPrice();
+    public void setSellingPrice(Double totalPrice);
 }

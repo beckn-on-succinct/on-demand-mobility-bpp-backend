@@ -1,8 +1,10 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
 import com.venky.swf.db.table.ModelImpl;
+import in.succinct.bpp.cabs.db.model.demand.Trip;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class UserImpl extends ModelImpl<User> {
@@ -11,8 +13,16 @@ public class UserImpl extends ModelImpl<User> {
     }
 
     public boolean isAvailable() {
+        DriverLogin last = getProxy().getDriverLogins().get(0);
+        if (last.getLoggedOffAt() == null){
+            List<Trip> trips= last.getTrips();
+            Trip lastTrip = null;
+            if (!trips.isEmpty()){
+                lastTrip = trips.get(0);
+                return lastTrip.getEndTs() != null;
+            }
+        }
         return false;
-        //TODO based on schedule and trips
     }
 
     public boolean isVerified(){

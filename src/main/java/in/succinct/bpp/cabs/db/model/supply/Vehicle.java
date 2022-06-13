@@ -1,6 +1,8 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
+import com.venky.swf.db.annotations.column.COLUMN_DEF;
 import com.venky.swf.db.annotations.column.UNIQUE_KEY;
+import com.venky.swf.db.annotations.column.defaulting.StandardDefault;
 import com.venky.swf.db.annotations.column.indexing.Index;
 import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
 import com.venky.swf.db.annotations.column.ui.PROTECTION;
@@ -38,6 +40,7 @@ public interface Vehicle extends Model, Tagable {
 
     /* done by the kyc agent */
     @PROTECTION(Kind.NON_EDITABLE)
+    @COLUMN_DEF(StandardDefault.BOOLEAN_FALSE)
     public boolean isVerified();
     public void setVerified(boolean verified);
 

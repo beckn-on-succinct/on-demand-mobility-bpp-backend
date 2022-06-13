@@ -22,9 +22,9 @@ public class VerifiableDocumentImpl<M extends Model & VerifiableDocument> extend
     }
 
     public String getImageUrl() {
-        if (getProxy().getImageContentSize() > 0) {
+        if (getProxy().getFileContentSize() > 0) {
             return Config.instance().getServerBaseUrl() + "/"+
-                    StringUtil.pluralize(getReflector().getTableName().toLowerCase())+"/view/" + getProxy().getId();
+                    StringUtil.pluralize(getReflector().getTableName().toLowerCase())+"/view/" + getProxy().getId()     ;
         }else {
             return null;
         }
