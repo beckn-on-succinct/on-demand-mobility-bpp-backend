@@ -13,7 +13,6 @@ database/*.db.safe
 database/*.dmp
 database/indexes/**/*.done
 database/images/**
-database/*xlsx
 database/*csv
 docs/_build
 src/main/resources/templates/node_modules/

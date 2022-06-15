@@ -13,7 +13,11 @@ public class UserImpl extends ModelImpl<User> {
     }
 
     public boolean isAvailable() {
-        DriverLogin last = getProxy().getDriverLogins().get(0);
+        List<DriverLogin> logins = getProxy().getDriverLogins();
+        if (logins.isEmpty()){
+            return false;
+        }
+        DriverLogin last = logins.get(0);
         if (last.getLoggedOffAt() == null){
             List<Trip> trips= last.getTrips();
             Trip lastTrip = null;

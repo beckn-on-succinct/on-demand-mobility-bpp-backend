@@ -1,0 +1,10 @@
+#!/bin/sh
+toolpath=`dirname $0`
+projpath=$toolpath/../
+cd $projpath
+
+source overrideProperties/config/envvars
+apikey=`bin/getapikey` ## root key 
+curl -H "ApiKey:$apikey" -F datafile=@database/cities.xlsx "http://localhost:${wport}/importxls" &
+curl -H "ApiKey:$apikey" -F datafile=@database/pin_codes.xlsx -F raw=true "http://localhost:${wport}/pin_codes/importxls" & 
+curl -H "ApiKey:$apikey" -F datafile=@database/postal_offices.xlsx -F raw=true "http://localhost:${wport}/postal_offices/importxls" &

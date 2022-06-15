@@ -5,7 +5,7 @@ import com.venky.swf.db.annotations.column.validations.Enumeration;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.plugins.collab.db.model.participants.admin.Address;
 
-import java.util.Date;
+import java.sql.Date;
 
 public interface DriverDocument extends Model,VerifiableDocument, Address {
 

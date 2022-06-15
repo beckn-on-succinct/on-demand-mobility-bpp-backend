@@ -1,13 +1,15 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
+import com.venky.swf.db.annotations.column.COLUMN_DEF;
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.PASSWORD;
+import com.venky.swf.db.annotations.column.defaulting.StandardDefault;
 import com.venky.swf.db.annotations.column.ui.HIDDEN;
 import com.venky.swf.db.annotations.column.ui.PROTECTION;
 import com.venky.swf.db.annotations.column.ui.PROTECTION.Kind;
 
 import java.io.InputStream;
-import java.util.Date;
+import java.sql.Date;
 
 public interface VerifiableDocument  {
 
@@ -15,6 +17,7 @@ public interface VerifiableDocument  {
     public boolean isExpired();
 
     @PROTECTION(Kind.NON_EDITABLE)
+    @COLUMN_DEF(StandardDefault.BOOLEAN_FALSE)
     public boolean isVerified();
     public void setVerified(boolean verified);
 
