@@ -15,6 +15,7 @@ import com.venky.swf.db.model.Model;
 import in.succinct.bpp.cabs.db.model.tag.Tagable;
 
 import java.util.List;
+import java.util.SortedSet;
 
 @MENU("Inventory")
 @HAS_DESCRIPTION_FIELD("VEHICLE_NUMBER")
@@ -37,6 +38,9 @@ public interface Vehicle extends Model, Tagable {
     @WATERMARK("Comma Separated Values")
     public String getTags();
     public void setTags(String tags);
+
+    @IS_VIRTUAL
+    public SortedSet<String> getTagSet();
 
 
     List<VehicleDocument> getDocuments();

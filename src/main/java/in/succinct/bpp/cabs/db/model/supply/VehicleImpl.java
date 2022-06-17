@@ -4,6 +4,9 @@ import com.venky.swf.db.table.ModelImpl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class VehicleImpl extends ModelImpl<Vehicle> {
     public VehicleImpl(){
@@ -27,5 +30,17 @@ public class VehicleImpl extends ModelImpl<Vehicle> {
             }
         }
         return true;
+    }
+
+    SortedSet<String> tagSet = null;
+    public SortedSet<String> getTagSet() {
+        if (tagSet == null){
+            tagSet = new TreeSet<>();
+            StringTokenizer tokenizer = new StringTokenizer(getProxy().getTags(),",");
+            while (tokenizer.hasMoreTokens()){
+                tagSet.add(tokenizer.nextToken());
+            }
+        }
+        return tagSet;
     }
 }

@@ -16,6 +16,7 @@ import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +58,7 @@ public class TripImpl extends ModelImpl<Trip> {
 
         StringBuilder tagQuery = new StringBuilder("%");
         for (String tag :tagSet){
-            tagQuery.append(tag.trim()).append(",");
+            tagQuery.append(tag.trim());//.append(","); don't put last comma. last tag may not be  ound.
             tagQuery.append("%");
         }
 
@@ -72,7 +73,7 @@ public class TripImpl extends ModelImpl<Trip> {
 
         List<DriverLogin> logins = select.execute();
 
-        List<DriverLogin> filtered = logins.stream().filter(l -> l.getAuthorizedDriver().getDriver().isAvailable()).sorted((o1, o2) -> {
+        List<DriverLogin> filtered = logins.stream().filter(l -> l.getAuthorizedDriver().getDriver().isAvailable() && l.getAuthorizedDriver().getVehicle().getTagSet().containsAll(tagSet)).sorted((o1, o2) -> {
             double d1 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o1));
             double d2 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o2));
             int ret = (int) (d1 - d2);
@@ -180,5 +181,36 @@ public class TripImpl extends ModelImpl<Trip> {
 
         trip.save();
 
+    }
+    public void start(){
+        Trip t = getProxy();
+
+        DriverLogin driverLogin = t.getDriverLogin();
+
+        if (driverLogin == null || driverLogin.getLoggedOffAt() != null ){
+            throw new UnsupportedOperationException("Cannot start trip unless driver is assigned and is logged in");
+        }
+        if (ObjectUtil.equals(t.getStatus(),Trip.NotStarted)){
+            t.setStatus(Trip.Started);
+            t.setStartTs(new Timestamp(System.currentTimeMillis()));
+            t.save();
+            t.getDriverLogin().updateLocation(new GeoCoordinate(t.getTripStops().get(0)));
+        }
+    }
+    public void end(){
+        Trip t = getProxy();
+        List<TripStop> stops = t.getTripStops();
+
+        DriverLogin driverLogin = t.getDriverLogin();
+
+        if (driverLogin == null || driverLogin.getLoggedOffAt() != null ){
+            throw new UnsupportedOperationException("Cannot start trip unless driver is assigned and is logged in");
+        }
+        if (!ObjectUtil.equals(t.getStatus(),Trip.Ended)){
+            t.setStatus(Trip.Ended);
+            t.setEndTs(new Timestamp(System.currentTimeMillis()));
+            t.save();
+            t.getDriverLogin().updateLocation(new GeoCoordinate(stops.get(stops.size()-1)));
+        }
     }
 }

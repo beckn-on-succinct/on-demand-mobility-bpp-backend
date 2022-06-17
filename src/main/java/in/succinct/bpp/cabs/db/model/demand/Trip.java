@@ -98,4 +98,7 @@ public interface Trip extends Model, GeoLocation {
     //* This is what is paid by the client.
     public Double getSellingPrice();
     public void setSellingPrice(Double totalPrice);
+
+    public void start();
+    public void end();
 }
