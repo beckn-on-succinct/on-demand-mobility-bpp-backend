@@ -12,6 +12,10 @@ public class UserImpl extends ModelImpl<User> {
         super(u);
     }
 
+    public List<DriverLogin> getMaxDriverLogins(int max){
+        List<DriverLogin> logins = getChildren(DriverLogin.class,"AUTHORIZED_DRIVER_ID",null,1);
+        return logins;
+    }
     public boolean isAvailable() {
         List<DriverLogin> logins = getProxy().getDriverLogins();
         if (logins.isEmpty()){

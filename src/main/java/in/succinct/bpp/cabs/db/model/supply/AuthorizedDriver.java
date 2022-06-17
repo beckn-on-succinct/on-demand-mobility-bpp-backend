@@ -20,6 +20,7 @@ public interface AuthorizedDriver extends Model {
     public User getDriver();
 
 
+    public DriverLogin login();
 
 
 

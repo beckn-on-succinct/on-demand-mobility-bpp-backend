@@ -30,6 +30,9 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     @CONNECTED_VIA("AUTHORIZED_DRIVER_ID")
     List<DriverLogin> getDriverLogins();
 
+    @IS_VIRTUAL
+    List<DriverLogin> getMaxDriverLogins(int max);
+
     @CONNECTED_VIA("DRIVER_ID")
     List<DriverDocument> getDriverDocuments();
 
