@@ -19,4 +19,4 @@ src/main/resources/templates/node_modules/
 src/main/resources/scripts/node_modules/
 /.gradle/
 .keystore
-doc/
+docs/_build/
