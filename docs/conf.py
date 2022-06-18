@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Mobility BPP (Reference implementation)'
+project = 'Mobility Operator (Reference implementation)'
 copyright = '2022, Beckn Foundation'
 author = 'Venky Mahadevan,Prashant Patil'
 

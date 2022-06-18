@@ -1,4 +1,4 @@
-Mobility BPP (Reference implementation)
+Mobility Operator (Reference implementation)
 ========================================
 
 .. toctree::
