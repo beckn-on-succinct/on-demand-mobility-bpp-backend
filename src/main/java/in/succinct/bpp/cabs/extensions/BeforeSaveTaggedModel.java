@@ -78,6 +78,7 @@ public class BeforeSaveTaggedModel<T extends Tagable & Model> extends BeforeMode
             if (tags.isEmpty()){
                 Tag tag  = Database.getTable(Tag.class).newRecord();
                 tag.setName(this.tag.trim());
+                tag.setTaggedModelName(taggedModelName);
                 tag = Database.getTable(Tag.class).getRefreshed(tag);
                 tag.save();
             }

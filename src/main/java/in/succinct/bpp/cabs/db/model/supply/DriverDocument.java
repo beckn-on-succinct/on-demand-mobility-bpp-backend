@@ -23,11 +23,6 @@ public interface DriverDocument extends Model,VerifiableDocument, Address {
     public String getDocument();
     public void setDocument(String documentType);
 
-    public Date getDateOfBirth();
-    public void setDateOfBirth(Date dateOfBirth);
-
-    public String getLongName();
-    public void setLongName(String longName);
 
 
 
