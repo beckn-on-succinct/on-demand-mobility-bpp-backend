@@ -7,6 +7,7 @@ import com.venky.swf.db.annotations.column.validations.Enumeration;
 import com.venky.swf.db.annotations.column.validations.IntegerRange;
 import com.venky.swf.db.annotations.model.MENU;
 import com.venky.swf.db.model.Model;
+import com.venky.swf.routing.Config;
 import in.succinct.bpp.cabs.db.model.routes.Route;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
@@ -18,18 +19,19 @@ import java.util.List;
 
 @MENU("Trip")
 public interface Trip extends Model, GeoLocation {
+    public static  final String UnConfirmed = "Not Confirmed";
     public static  final String NotStarted = "Not Started";
+    public static  final String Confirmed = NotStarted;
     public static  final String Started = "Started";
     public static  final String Ended = "Ended";
 
 
-    @Enumeration(NotStarted + "," + Started  + "," + Ended)
+    @Enumeration(UnConfirmed +"," + Confirmed + "," + Started  + "," + Ended)
     public String getStatus();
     public void setStatus(String status);
 
-    @IS_NULLABLE(false)
-    public long getDeploymentPurposeId();
-    public void setDeploymentPurposeId(long id);
+    public Long getDeploymentPurposeId();
+    public void setDeploymentPurposeId(Long id);
     public DeploymentPurpose getDeploymentPurpose();
 
     public Timestamp getScheduledStart();
