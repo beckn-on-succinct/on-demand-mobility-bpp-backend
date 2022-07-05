@@ -34,26 +34,7 @@ public class TripImpl extends ModelImpl<Trip> {
     public TripImpl(Trip trip){
         super(trip);
     }
-    public void allocate(){
-        Trip trip = getProxy();
-        DeploymentPurpose purpose = trip.getDeploymentPurpose();
 
-        List<TripStop> stops = trip.getTripStops();
-        String vehicleTags = trip.getVehicleTags();
-        SortedSet<String> tagSet = new TreeSet<>();
-        StringTokenizer tokenizer = new StringTokenizer(vehicleTags,",");
-        while (tokenizer.hasMoreTokens()) {
-            tagSet.add(tokenizer.nextToken().trim());
-        }
-
-
-        List<DriverLogin> vehicles = getAvailableVehicles(stops.get(0),purpose, tagSet);
-
-        if (!vehicles.isEmpty()){
-            trip.setDriverLoginId(vehicles.get(0).getId());
-        }
-
-    }
 
     private List<DriverLogin> getAvailableVehicles(TripStop start, DeploymentPurpose purpose, SortedSet<String> tagSet) {
         ModelReflector<DriverLogin> ref = ModelReflector.instance(DriverLogin.class);
@@ -130,7 +111,7 @@ public class TripImpl extends ModelImpl<Trip> {
             return getProxy().getDriverLogin().getLat();
         }
     }
-    public void rate(){
+    public void allocate(){
         Trip trip = getProxy();
         Bucket distance = new Bucket();
         Bucket time = new Bucket();
@@ -218,6 +199,7 @@ public class TripImpl extends ModelImpl<Trip> {
                 double tax = trip.getSellingPrice() - trip.getPrice();
                 trip.setCGst(tax/2.0);
                 trip.setSGst(tax/2.0);
+                trip.setDriverLoginId(logins.get(0).getId());
 
                 trip.save();
                 break;

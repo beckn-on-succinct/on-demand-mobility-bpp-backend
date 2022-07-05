@@ -1,16 +1,29 @@
 package in.succinct.bpp.cabs.controller;
 
-import com.venky.core.string.StringUtil;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
 import com.venky.swf.controller.Controller;
 import com.venky.swf.db.Database;
+import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.annotations.column.ui.mimes.MimeType;
 import com.venky.swf.path.Path;
+import com.venky.swf.plugins.collab.db.model.config.City;
+import com.venky.swf.plugins.collab.db.model.config.Country;
+import com.venky.swf.plugins.collab.db.model.config.PinCode;
+import com.venky.swf.plugins.collab.db.model.config.State;
 import com.venky.swf.plugins.collab.db.model.participants.admin.Company;
+import com.venky.swf.plugins.collab.db.model.user.Email;
+import com.venky.swf.plugins.collab.db.model.user.Phone;
 import com.venky.swf.routing.Config;
+import com.venky.swf.sql.Conjunction;
+import com.venky.swf.sql.Expression;
+import com.venky.swf.sql.Operator;
+import com.venky.swf.sql.Select;
 import com.venky.swf.views.BytesView;
 import com.venky.swf.views.View;
+import in.succinct.beckn.Address;
+import in.succinct.beckn.Billing;
+import in.succinct.beckn.BreakUp;
 import in.succinct.beckn.Catalog;
 import in.succinct.beckn.Categories;
 import in.succinct.beckn.Category;
@@ -23,16 +36,21 @@ import in.succinct.beckn.Item;
 import in.succinct.beckn.Items;
 import in.succinct.beckn.Location;
 import in.succinct.beckn.Locations;
+import in.succinct.beckn.Message;
+import in.succinct.beckn.Order;
 import in.succinct.beckn.Price;
 import in.succinct.beckn.Provider;
 import in.succinct.beckn.Providers;
+import in.succinct.beckn.Quote;
 import in.succinct.beckn.Request;
 import in.succinct.beckn.Tags;
 import in.succinct.beckn.Vehicle;
 import in.succinct.bpp.cabs.db.model.demand.Trip;
 import in.succinct.bpp.cabs.db.model.demand.TripStop;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
-import in.succinct.bpp.cabs.db.model.tag.Tag;
+import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
+import in.succinct.bpp.cabs.db.model.supply.User;
+import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -42,6 +60,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -51,6 +71,130 @@ public class BecknController extends Controller {
     public BecknController(Path path) {
         super(path);
     }
+
+
+    private Trip getTrip(String fulfilmentId,boolean confirm){
+        String tripId = getLocalUniqueId(fulfilmentId,Entity.fulfillment);
+        Trip trip = Database.getTable(Trip.class).get(Long.parseLong(tripId));
+        if (trip!= null ){
+            trip.setStatus(Trip.Confirmed);
+            trip.save();
+        }
+        return trip;
+    }
+
+    public void setProvider(Trip trip, Provider provider, Context context){
+        Company company = trip.getDriverLogin().getAuthorizedDriver().getCreatorUser().getRawRecord().getAsProxy(User.class).getCompany();
+        provider.setId(getBecknId(company.getId(),Entity.provider,context));
+        provider.setDescriptor(new Descriptor());
+        provider.getDescriptor().setName(company.getName());
+    }
+    public void setCategories(Trip trip, Provider provider,Context context){
+        provider.setCategories(new Categories());
+        Category category = new Category();
+        category.setId(getBecknId(trip.getDeploymentPurposeId(),Entity.category,context));
+        category.setDescriptor(new Descriptor());
+        category.getDescriptor().setName(trip.getDeploymentPurpose().getName());
+    }
+    public void setItems(Trip trip, Provider provider,Context context){
+        provider.setItems(new Items());
+        Item item = new Item();
+        item.setCategoryId(provider.getCategories().get(0).getId());
+        item.setId(getBecknId(trip.getDriverLoginId(),Entity.item,context));
+        item.setDescriptor(new Descriptor());
+        StringBuilder itemName = new StringBuilder();
+        itemName.append(trip.getDeploymentPurpose().getName());
+
+        for (String tag : trip.getDriverLogin().getAuthorizedDriver().getVehicle().getTagSet()) {
+            itemName.append("-").append(tag);
+        }
+
+        item.getDescriptor().setName(itemName.toString());
+        item.getDescriptor().setCode(itemName.toString());
+        item.setPrice(new Price());
+        item.getPrice().setCurrency("INR");
+        item.getPrice().setValue(trip.getSellingPrice());
+
+        item.setFulfillmentId(getBecknId(trip.getId(),Entity.fulfillment,context));
+    }
+    public void setProviderLocations(Trip trip, Provider provider, Context context){
+        provider.setLocations(new Locations());
+        Location location = new Location();
+        provider.getLocations().add(location);
+        DriverLogin driverLogin = trip.getDriverLogin();
+        location.setGps(new GeoCoordinate(driverLogin.getLat(),driverLogin.getLng()));
+        location.setId(getBecknId(driverLogin.getId(),Entity.provider_location,context));
+    }
+    public void setFulfillment(@NotNull Trip trip, Order order,Context context){
+
+        Fulfillment fulfillment = new Fulfillment();
+        order.setFulfillment(fulfillment);
+        setFulfillment(trip,fulfillment,context);
+    }
+    public void setFulfillment(Trip trip,Fulfillment fulfillment,Context context){
+        FulfillmentStop start = new FulfillmentStop();
+        FulfillmentStop end = new FulfillmentStop();
+        fulfillment.setStart(start);
+        fulfillment.setEnd(end);
+
+        List<TripStop> stops = trip.getTripStops();
+
+        start.setLocation(new Location());
+        end.setLocation(new Location());
+        start.getLocation().setGps(new GeoCoordinate(stops.get(0)));
+        end.getLocation().setGps(new GeoCoordinate(stops.get(stops.size()-1)));
+
+        Vehicle vehicle = new Vehicle();
+        fulfillment.setVehicle(vehicle);
+        vehicle.setRegistration(trip.getDriverLogin().getAuthorizedDriver().getVehicle().getVehicleNumber());
+        fulfillment.setId(getBecknId(trip.getId(),Entity.fulfillment,context));
+
+    }
+    public void setFulfillment(@NotNull Trip trip, Catalog catalog,Context context){
+        Fulfillment fulfillment = new Fulfillment();
+        catalog.setFulfillments(new Fulfillments());
+        catalog.getFulfillments().add(fulfillment);
+        setFulfillment(trip,fulfillment,context);
+    }
+    public void setQuote(Trip trip, Order order, Context context) {
+        if (ObjectUtil.equals(trip.getStatus(),Trip.UnConfirmed)){
+            Quote quote = new Quote();
+            order.setQuote( quote);
+            quote.setPrice(new Price());
+            quote.getPrice().setValue(trip.getSellingPrice());
+            quote.getPrice().setCurrency("INR");
+            BreakUp breakUp = new BreakUp();
+            quote.setBreakUp(breakUp);
+            Price price = new Price();
+            breakUp.createElement("item","Fare",price);
+            price.setCurrency("INR");
+            price.setValue(trip.getPrice());
+
+            Price tax = new Price();
+            breakUp.createElement("item","Tax",tax);
+            TypeConverter<Double> typeConverter = trip.getReflector().getJdbcTypeHelper().getTypeRef(double.class).getTypeConverter();
+
+            tax.setValue(typeConverter.valueOf(trip.getCGst()) +typeConverter.valueOf(trip.getIGst()) + typeConverter.valueOf((trip.getSGst())));
+        }
+    }
+
+    public Order getBecknOrder(Trip trip, Request reply){
+        Order order = new Order();
+        Provider provider = new Provider();
+        order.setProvider(provider);
+        setProvider(trip,provider,reply.getContext());
+        setCategories(trip,provider,reply.getContext());
+        setItems(trip,provider,reply.getContext());
+        setProviderLocations(trip,provider,reply.getContext());
+        setFulfillment(trip,order,reply.getContext());
+        if (ObjectUtil.equals(trip.getStatus(),Trip.UnConfirmed)){
+            setQuote(trip,order,reply.getContext());
+        }
+
+        return order;
+    }
+
+
     public void search(Request request,Request reply){
 
         Location start = request.getMessage().getIntent().getFulfillment().getStart().getLocation();
@@ -107,7 +251,6 @@ public class BecknController extends Controller {
         endStop.setLng(end.getGps().getLat());
         endStop.save();
 
-        trip.rate();
         trip.allocate();
 
         Catalog catalog = new Catalog();
@@ -117,54 +260,98 @@ public class BecknController extends Controller {
         d.setCode(Config.instance().getHostName());
         d.setName(d.getCode());
 
+
         Provider provider = new Provider();
         catalog.setProviders(new Providers());
         catalog.getProviders().add(provider);
-        provider.setDescriptor(new Descriptor());
-        provider.setId(getBecknId(trip.getDriverLoginId(),Entity.provider,reply.getContext()));
-        provider.getDescriptor().setName(trip.getDriverLogin().getAuthorizedDriver().getDriver().getName());
-        provider.setLocations(new Locations());
-        Location location = new Location();
-        location.setId(getBecknId(trip.getDriverLoginId(),Entity.provider_location,reply.getContext()));
-        location.setGps(new GeoCoordinate(trip.getDriverLogin().getLat(),trip.getDriverLogin().getLng()));
-        provider.getLocations().add(location);
-
-        Categories categories = new Categories();
-        provider.setCategories(categories);
-        Category outCategory = new Category();
-        categories.add(outCategory);
-        outCategory.setId(getBecknId(trip.getDeploymentPurposeId(),Entity.category,reply.getContext()));
-        outCategory.setDescriptor(new Descriptor());
-        outCategory.getDescriptor().setName(trip.getDeploymentPurpose().getName());
-        outCategory.getDescriptor().setCode(outCategory.getDescriptor().getName());
-
-
-        provider.setItems(new Items());
-        Item item = new Item();
-        item.setLocationId(location.getId());
-        item.setCategoryId(category.getId());
-        item.setDescriptor(new Descriptor());
-        item.setId(getBecknId(trip.getDriverLoginId(),Entity.item,reply.getContext()));
-        item.setPrice(new Price());
-        item.getPrice().setCurrency("INR");
-        item.getPrice().setValue(trip.getSellingPrice());
-
-        StringBuilder itemName = new StringBuilder();
-        itemName.append(trip.getDeploymentPurpose().getName());
-
-        for (String tag : trip.getDriverLogin().getAuthorizedDriver().getVehicle().getTagSet()) {
-            itemName.append("-").append(tag);
+        setProvider(trip,provider,reply.getContext());
+        setProviderLocations(trip,provider,reply.getContext());
+        setCategories(trip,provider,reply.getContext());
+        setItems(trip,provider,reply.getContext());
+        setFulfillment(trip,catalog,reply.getContext());
+    }
+    public void select(Request request,Request reply){
+        Order order = request.getMessage().getOrder();
+        Trip trip = getTrip(order.getFulfillment().getId(),false);
+        Order tripOrder = getBecknOrder(trip,reply);
+        reply.setMessage(new Message());
+        reply.getMessage().setOrder(tripOrder);
+    }
+    public User ensurePassenger(in.succinct.beckn.User passenger){
+        Select select = new Select().from(User.class);
+        Expression where = new Expression(select.getPool(), Conjunction.AND);
+        if (!ObjectUtil.isVoid(passenger.getContact().getEmail())){
+            Email.validate(passenger.getContact().getEmail());
+            where.add(new Expression(select.getPool(), "EMAIL", Operator.EQ, passenger.getContact().getEmail()));
         }
-        item.getDescriptor().setName(itemName.toString());
+        if (!ObjectUtil.isVoid(passenger.getContact().getPhone())){
+            where.add(new Expression(select.getPool(), "PHONE_NUMBER", Operator.EQ, Phone.sanitizePhoneNumber(passenger.getContact().getPhone())));
+        }
+        List<User> users = select.execute();
+        if (users.isEmpty()){
+            User user = Database.getTable(User.class).newRecord();
+            user.setLongName(passenger.getPerson().getName());
+            user.setPhoneNumber(Phone.sanitizePhoneNumber(passenger.getContact().getPhone()));
+            user.setEmail(passenger.getContact().getEmail());
+            user.setName(user.getPhoneNumber());
+            user.save();
+            return user;
+        }else {
+            return users.get(0);
+        }
+    }
+    public User ensureBiller(Billing billing){
+        Select select = new Select().from(User.class);
+        Expression where = new Expression(select.getPool(), Conjunction.AND);
+        if (!ObjectUtil.isVoid(billing.getEmail())){
+            Email.validate(billing.getEmail());
+            where.add(new Expression(select.getPool(), "EMAIL", Operator.EQ, billing.getEmail()));
+        }
+        if (!ObjectUtil.isVoid(billing.getPhone())){
+            where.add(new Expression(select.getPool(), "PHONE_NUMBER", Operator.EQ, Phone.sanitizePhoneNumber(billing.getPhone())));
+        }
+        List<User> users = select.execute();
+        User user = null;
+        if (users.isEmpty()){
+            user = Database.getTable(User.class).newRecord();
+            user.setLongName(billing.getName());
+            user.setPhoneNumber(Phone.sanitizePhoneNumber(billing.getPhone()));
+            user.setEmail(billing.getEmail());
+            user.setName(user.getPhoneNumber());
+        }else {
+            user = users.get(0);
+        }
+        Address address = billing.getAddress();
+        user.setAddressLine1(address.getName());
+        user.setAddressLine2(address.getDoor() + "," + address.getBuilding());
+        user.setAddressLine3(address.getLocality());
+        user.setCountryId(Country.findByISO(address.getCountry()).getId());
+        user.setCityId(Objects.requireNonNull(City.findByCode(address.getCity())).getId());
+        user.setPinCodeId(Objects.requireNonNull(PinCode.find(address.getPinCode())).getId());
+        user.save();
+        return user;
+    }
+
+    public void init(Request request,Request reply){
+        Order order = request.getMessage().getOrder();
+        Trip trip = getTrip(order.getFulfillment().getId(),false);
+        in.succinct.beckn.User passenger = order.getFulfillment().getCustomer();
+        User user = ensurePassenger(passenger);
+        Billing billing = order.getBilling();
+        User biller = ensureBiller(billing);
 
 
-        Fulfillment fulfillment = new Fulfillment();
-        catalog.setFulfillments(new Fulfillments());
-        catalog.getFulfillments().add(fulfillment);
-        fulfillment.setVehicle(new Vehicle());
-        fulfillment.getVehicle().setRegistration(trip.getDriverLogin().getAuthorizedDriver().getVehicle().getVehicleNumber());
-        fulfillment.setId(getBecknId(trip.getId(),Entity.fulfillment,reply.getContext()));
+        Order tripOrder = getBecknOrder(trip,reply);
+        reply.setMessage(new Message());
+        reply.getMessage().setOrder(tripOrder);
+    }
 
+    public void confirm(Request request, Request reply){
+        Order order = request.getMessage().getOrder();
+        Trip trip = getTrip(order.getFulfillment().getId(),true);
+        Order tripOrder = getBecknOrder(trip,reply);
+        reply.setMessage(new Message());
+        reply.getMessage().setOrder(tripOrder);
     }
 
     public static String getIdPrefix(){

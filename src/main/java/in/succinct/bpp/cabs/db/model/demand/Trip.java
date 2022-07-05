@@ -82,7 +82,6 @@ public interface Trip extends Model, GeoLocation {
     public List<TripStop>  getTripStops();
 
 
-    public void rate();
     public void allocate();
 
     public Double getPrice();
