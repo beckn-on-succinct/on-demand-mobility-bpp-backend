@@ -1,8 +1,10 @@
 package in.succinct.bpp.cabs.db.model.demand;
 
+import com.venky.cache.Cache;
 import com.venky.core.util.Bucket;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
+import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.db.table.ModelImpl;
@@ -14,11 +16,14 @@ import com.venky.swf.sql.Select;
 import in.succinct.bpp.cabs.db.model.pricing.TariffCard;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
+import in.succinct.bpp.cabs.db.model.supply.Vehicle;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -54,7 +59,6 @@ public class TripImpl extends ModelImpl<Trip> {
         ModelReflector<DriverLogin> ref = ModelReflector.instance(DriverLogin.class);
         Expression loggedInDriver = new Expression(ref.getPool(), Conjunction.OR);
         loggedInDriver.add(new Expression(ref.getPool(),"LOGGED_OFF_AT", Operator.EQ));
-        loggedInDriver.add(new Expression(ref.getPool(),"LOGGED_OFF_AT", Operator.LT, "LOGGED_IN_AT"));
 
         StringBuilder tagQuery = new StringBuilder("%");
         for (String tag :tagSet){
@@ -68,8 +72,10 @@ public class TripImpl extends ModelImpl<Trip> {
 
         Select select = new Select().from(DriverLogin.class).where(expression);
         select.add(" and exists (select " +
-                "1 from authorized_drivers a,  vehicles v , vehicle_deployment_purposes dp where dp.deployment_purpose_id = " +
-                purpose.getId() + " and dp.vehicle_id = a.vehicle_id and v.id = a.vehicle_id and a.id = driver_logins.authorized_driver_id and v.tags like '"+ tagQuery +"' )  ");
+                "1 from authorized_drivers a,  vehicles v , vehicle_deployment_purposes dp where a.id = driver_logins.authorized_driver_id " +
+                " and v.id = a.vehicle_id and dp.vehicle_id = v.id and v.tags like '" +tagQuery +"'" +
+                ( purpose != null? String.format(" and dp.deployment_purpose_id = %d " , purpose.getId()) : "" ) + ")");
+
 
         List<DriverLogin> logins = select.execute();
 
@@ -128,13 +134,19 @@ public class TripImpl extends ModelImpl<Trip> {
         Trip trip = getProxy();
         Bucket distance = new Bucket();
         Bucket time = new Bucket();
-        trip.getTripStops().forEach(ts->{
+        TripStop start = null;
+        TripStop end = null;
+        for (TripStop ts : trip.getTripStops()) {
             distance.increment(ts.getDistanceFromLastStop());
             time.increment(ts.getMinutesFromLastStop());
-        });
+            if (start == null) {
+                start = ts;
+            }
+            end = ts;
+        }
 
 
-        Set<String> tags = new HashSet<>();
+        SortedSet<String> tags = new TreeSet<>();
 
         StringTokenizer tok = new StringTokenizer(trip.getVehicleTags(),",");
         while (tok.hasMoreTokens()){
@@ -143,8 +155,14 @@ public class TripImpl extends ModelImpl<Trip> {
 
         Select select = new Select().from(TariffCard.class);
         Expression where = new Expression(select.getPool(),Conjunction.AND);
-        where.add(new Expression(select.getPool(),"DEPLOYMENT_PURPOSE_ID",Operator.EQ,trip.getDeploymentPurposeId()));
-        where.add(new Expression(select.getPool(),"TAG",Operator.IN,tags.toArray()));
+        if (trip.getReflector().isVoid(trip.getDeploymentPurposeId() )) {
+            where.add(new Expression(select.getPool(), "DEPLOYMENT_PURPOSE_ID", Operator.EQ, trip.getDeploymentPurposeId()));
+        }
+        if (tags.isEmpty()) {
+            where.add(new Expression(select.getPool(), "TAG", Operator.IN, tags.toArray()));
+        }else {
+            where.add(new Expression(select.getPool(), "TAG", Operator.EQ));
+        }
 
         Expression fromKmWhere = new Expression(select.getPool(),Conjunction.OR);
         fromKmWhere.add(new Expression(select.getPool(), "FROM_KMS",Operator.EQ));
@@ -162,24 +180,51 @@ public class TripImpl extends ModelImpl<Trip> {
 
         TypeConverter<Double> converter = getReflector().getJdbcTypeHelper().getTypeRef(double.class).getTypeConverter();
 
-        Bucket totalSellingPrice = new Bucket();
-        Bucket totalPrice = new Bucket();
+        Map<Long,Bucket> totalSellingPrice = new Cache<Long, Bucket>() {
+            @Override
+            protected Bucket getValue(Long aLong) {
+                return new Bucket();
+            }
+        };
+        Map<Long,Bucket> totalPrice = new Cache<Long, Bucket>() {
+            @Override
+            protected Bucket getValue(Long aLong) {
+                return new Bucket();
+            }
+        };
         for (TariffCard card : cards) {
             Bucket sellingPrice = new Bucket();
             sellingPrice.increment(converter.valueOf(card.getFixedPrice()));
             sellingPrice.increment(converter.valueOf(card.getPricePerKm())  * distance.doubleValue());
             sellingPrice.increment(converter.valueOf(card.getPricePerHour())  * time.doubleValue());
 
-            totalSellingPrice.increment(sellingPrice.doubleValue());
-            totalPrice.increment(sellingPrice.doubleValue()/(1.0 +  converter.valueOf(card.getTaxRate()/100.0) ));
+            totalSellingPrice.get(card.getDeploymentPurposeId()).increment(sellingPrice.doubleValue());
+            totalPrice.get(card.getDeploymentPurposeId()).increment(sellingPrice.doubleValue()/(1.0 +  converter.valueOf(card.getTaxRate()/100.0) ));
         }
-        trip.setSellingPrice(totalSellingPrice.doubleValue());
-        trip.setPrice(totalPrice.doubleValue());
-        double tax = totalSellingPrice.doubleValue() - totalPrice.doubleValue();
-        trip.setCGst(tax/2.0);
-        trip.setSGst(tax/2.0);
+        SortedSet<Long> purposeSet = new TreeSet<>(new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+                return Double.compare(totalSellingPrice.get(o1).doubleValue(),totalPrice.get(o2).doubleValue());
+            }
+        });
+        purposeSet.addAll(totalSellingPrice.keySet());
+        for (Long deploymentPurposeId : purposeSet){
+            DeploymentPurpose deploymentPurpose = Database.getTable(DeploymentPurpose.class).get(deploymentPurposeId);
+            List<DriverLogin> logins = getAvailableVehicles(start,deploymentPurpose,tags);
+            if (!logins.isEmpty()){
+                trip.setDeploymentPurposeId(deploymentPurposeId);
+                trip.setSellingPrice(totalSellingPrice.get(deploymentPurposeId).doubleValue());
+                trip.setPrice(totalPrice.get(deploymentPurposeId).doubleValue());
+                double tax = trip.getSellingPrice() - trip.getPrice();
+                trip.setCGst(tax/2.0);
+                trip.setSGst(tax/2.0);
 
-        trip.save();
+                trip.save();
+                break;
+            }
+        }
+
+
 
     }
     public void start(){

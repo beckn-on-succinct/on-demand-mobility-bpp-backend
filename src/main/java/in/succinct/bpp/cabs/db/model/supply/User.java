@@ -21,7 +21,7 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     List<Trip> getBookedTrips();
 
 
-    @CONNECTED_VIA("CREATOR_USER_ID")
+    @CONNECTED_VIA("CREATOR_ID")
     List<Vehicle> getOnboardedVehicles();
 
 

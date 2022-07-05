@@ -10,7 +10,7 @@ public interface TariffCard extends Model {
     public void setDeploymentPurposeId(Long id);
     public DeploymentPurpose getDeploymentPurpose();
 
-    @UNIQUE_KEY
+    @UNIQUE_KEY(allowMultipleRecordsWithNull = false)
     public String getTag();
     public void setTag(String tag);
 
