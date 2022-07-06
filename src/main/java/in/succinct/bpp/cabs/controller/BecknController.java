@@ -195,6 +195,22 @@ public class BecknController extends Controller {
     }
 
 
+    public View search(){
+        return api();
+    }
+    public View select(){
+        return api();
+    }
+    public View init(){
+        return api();
+    }
+    public View confirm(){
+        return api();
+    }
+
+
+
+
     public void search(Request request,Request reply){
 
         Location start = request.getMessage().getIntent().getFulfillment().getStart().getLocation();
