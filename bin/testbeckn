@@ -1,0 +1,1 @@
+curl -H 'content-type:application/json' -H 'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json

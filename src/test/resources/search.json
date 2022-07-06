@@ -1,0 +1,9 @@
+{
+  "context": { "city": "std:080" , "bpp_id" : "mandi.succinct.in"},
+  "message": {
+    "intent": {
+      "item": { "descriptor": { "name": "Fruit" } },
+      "fulfillment": { "end": { "location": { "gps": "12.910793,77.596316" } } }
+    }
+  }
+}

@@ -14,6 +14,7 @@ database/*.dmp
 database/indexes/**/*.done
 database/images/**
 database/*csv
+database/auth
 docs/_build
 src/main/resources/templates/node_modules/
 src/main/resources/scripts/node_modules/
