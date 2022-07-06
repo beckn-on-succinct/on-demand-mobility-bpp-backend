@@ -1,9 +1,19 @@
 {
-  "context": { "city": "std:080" , "bpp_id" : "mandi.succinct.in"},
+    "context": { "city": "std:080" , "bpp_id" : "becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in"},
   "message": {
     "intent": {
-      "item": { "descriptor": { "name": "Fruit" } },
-      "fulfillment": { "end": { "location": { "gps": "12.910793,77.596316" } } }
-    }
+            "fulfillment": {
+                "start": {
+                    "location": {
+                        "gps": "12.910793,77.696316"
+                    }
+                },
+                "end": {
+                    "location": {
+                        "gps": "12.900793,77.596316"
+                    }
+                }
+            }
+        }
   }
 }

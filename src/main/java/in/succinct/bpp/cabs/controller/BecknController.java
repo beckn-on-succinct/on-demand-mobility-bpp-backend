@@ -3,6 +3,7 @@ package in.succinct.bpp.cabs.controller;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
 import com.venky.swf.controller.Controller;
+import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.annotations.column.ui.mimes.MimeType;
@@ -194,16 +195,19 @@ public class BecknController extends Controller {
         return order;
     }
 
-
+    @RequireLogin(false)
     public View search(){
         return api();
     }
+    @RequireLogin(false)
     public View select(){
         return api();
     }
+    @RequireLogin(false)
     public View init(){
         return api();
     }
+    @RequireLogin(false)
     public View confirm(){
         return api();
     }
@@ -432,6 +436,7 @@ public class BecknController extends Controller {
     }
 
     /** this is the api called by the protocol adaptor */
+    @RequireLogin(false)
     public View api(){
         try  {
             JSONObject object = (JSONObject) JSONValue.parse(new InputStreamReader(getPath().getInputStream()));
