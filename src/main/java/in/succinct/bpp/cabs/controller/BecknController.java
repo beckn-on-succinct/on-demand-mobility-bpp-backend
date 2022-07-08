@@ -1,7 +1,10 @@
 package in.succinct.bpp.cabs.controller;
 
+import com.venky.clustering.Cluster.Distance;
+import com.venky.core.util.ExceptionUtil;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
+import com.venky.geo.GeoDistance;
 import com.venky.swf.controller.Controller;
 import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.db.Database;
@@ -25,11 +28,14 @@ import com.venky.swf.views.View;
 import in.succinct.beckn.Address;
 import in.succinct.beckn.Billing;
 import in.succinct.beckn.BreakUp;
+import in.succinct.beckn.BreakUp.BreakUpElement;
 import in.succinct.beckn.Catalog;
 import in.succinct.beckn.Categories;
 import in.succinct.beckn.Category;
 import in.succinct.beckn.Context;
 import in.succinct.beckn.Descriptor;
+import in.succinct.beckn.Error;
+import in.succinct.beckn.Error.Type;
 import in.succinct.beckn.Fulfillment;
 import in.succinct.beckn.FulfillmentStop;
 import in.succinct.beckn.Fulfillments;
@@ -58,6 +64,8 @@ import org.json.simple.JSONValue;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -65,6 +73,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,7 +86,7 @@ public class BecknController extends Controller {
     private Trip getTrip(String fulfilmentId,boolean confirm){
         String tripId = getLocalUniqueId(fulfilmentId,Entity.fulfillment);
         Trip trip = Database.getTable(Trip.class).get(Long.parseLong(tripId));
-        if (trip!= null ){
+        if (trip!= null && confirm){
             trip.setStatus(Trip.Confirmed);
             trip.save();
         }
@@ -85,7 +94,14 @@ public class BecknController extends Controller {
     }
 
     public void setProvider(Trip trip, Provider provider, Context context){
-        Company company = trip.getDriverLogin().getAuthorizedDriver().getCreatorUser().getRawRecord().getAsProxy(User.class).getCompany();
+        User driver = trip.getDriverLogin().getAuthorizedDriver().getDriver();
+        Company company = driver.getCompany();
+        if (company == null) {
+            List<Company> companies = driver.getRawRecord().getAsProxy(User.class).getCompanies();
+            if (companies.size() > 0 ){
+                company = companies.get(0);
+            }
+        }
         provider.setId(getBecknId(company.getId(),Entity.provider,context));
         provider.setDescriptor(new Descriptor());
         provider.getDescriptor().setName(company.getName());
@@ -96,6 +112,7 @@ public class BecknController extends Controller {
         category.setId(getBecknId(trip.getDeploymentPurposeId(),Entity.category,context));
         category.setDescriptor(new Descriptor());
         category.getDescriptor().setName(trip.getDeploymentPurpose().getName());
+        provider.getCategories().add(category);
     }
     public void setItems(Trip trip, Provider provider,Context context){
         provider.setItems(new Items());
@@ -117,14 +134,16 @@ public class BecknController extends Controller {
         item.getPrice().setValue(trip.getSellingPrice());
 
         item.setFulfillmentId(getBecknId(trip.getId(),Entity.fulfillment,context));
+        provider.getItems().add(item);
     }
     public void setProviderLocations(Trip trip, Provider provider, Context context){
-        provider.setLocations(new Locations());
-        Location location = new Location();
-        provider.getLocations().add(location);
         DriverLogin driverLogin = trip.getDriverLogin();
+        Location location = new Location();
         location.setGps(new GeoCoordinate(driverLogin.getLat(),driverLogin.getLng()));
         location.setId(getBecknId(driverLogin.getId(),Entity.provider_location,context));
+
+        provider.setLocations(new Locations());
+        provider.getLocations().add(location);
     }
     public void setFulfillment(@NotNull Trip trip, Order order,Context context){
 
@@ -166,16 +185,20 @@ public class BecknController extends Controller {
             quote.getPrice().setCurrency("INR");
             BreakUp breakUp = new BreakUp();
             quote.setBreakUp(breakUp);
+
             Price price = new Price();
-            breakUp.createElement("item","Fare",price);
+            BreakUpElement fareBreakup = breakUp.createElement("item","Fare",price);
             price.setCurrency("INR");
             price.setValue(trip.getPrice());
 
             Price tax = new Price();
-            breakUp.createElement("item","Tax",tax);
+            BreakUpElement taxBreakup = breakUp.createElement("item","Tax",tax);
             TypeConverter<Double> typeConverter = trip.getReflector().getJdbcTypeHelper().getTypeRef(double.class).getTypeConverter();
-
             tax.setValue(typeConverter.valueOf(trip.getCGst()) +typeConverter.valueOf(trip.getIGst()) + typeConverter.valueOf((trip.getSGst())));
+            tax.setCurrency("INR");
+            breakUp.add(fareBreakup);
+            breakUp.add(taxBreakup);
+
         }
     }
 
@@ -260,7 +283,10 @@ public class BecknController extends Controller {
         startStop.setName("Start");
         startStop.setSequenceNumber(0);
         startStop.setLat(start.getGps().getLat());
-        startStop.setLng(start.getGps().getLat());
+        startStop.setLng(start.getGps().getLng());
+        startStop.setMinutesFromLastStop(0);
+        startStop.setDistanceFromLastStop(0.0);
+        startStop.setEstimatedMinutesFromLastStop(0);
         startStop.save();
 
         TripStop endStop = Database.getTable(TripStop.class).newRecord();
@@ -268,11 +294,14 @@ public class BecknController extends Controller {
         endStop.setName("End");
         endStop.setSequenceNumber(1);
         endStop.setLat(end.getGps().getLat());
-        endStop.setLng(end.getGps().getLat());
+        endStop.setLng(end.getGps().getLng());
+        endStop.setDistanceFromLastStop(GeoDistance.getDrivingDistanceKms(startStop.getLat(),startStop.getLng(), endStop.getLat(), endStop.getLng(),Config.instance().getGeoProviderParams()));
+        endStop.setEstimatedMinutesFromLastStop((int)Math.ceil(endStop.getDistanceFromLastStop() * 60 /40)); //TODO 40 km/hr average hardcoded!! Need tfix this.(May be with analytics)
         endStop.save();
 
         trip.allocate();
 
+        reply.setMessage(new Message());
         Catalog catalog = new Catalog();
         reply.getMessage().setCatalog(catalog);
         catalog.setDescriptor( new Descriptor());
@@ -283,8 +312,10 @@ public class BecknController extends Controller {
 
         Provider provider = new Provider();
         catalog.setProviders(new Providers());
-        catalog.getProviders().add(provider);
+
         setProvider(trip,provider,reply.getContext());
+        catalog.getProviders().add(provider);
+
         setProviderLocations(trip,provider,reply.getContext());
         setCategories(trip,provider,reply.getContext());
         setItems(trip,provider,reply.getContext());
@@ -307,13 +338,14 @@ public class BecknController extends Controller {
         if (!ObjectUtil.isVoid(passenger.getContact().getPhone())){
             where.add(new Expression(select.getPool(), "PHONE_NUMBER", Operator.EQ, Phone.sanitizePhoneNumber(passenger.getContact().getPhone())));
         }
-        List<User> users = select.execute();
+        List<User> users = select.where(where).execute();
         if (users.isEmpty()){
             User user = Database.getTable(User.class).newRecord();
             user.setLongName(passenger.getPerson().getName());
             user.setPhoneNumber(Phone.sanitizePhoneNumber(passenger.getContact().getPhone()));
             user.setEmail(passenger.getContact().getEmail());
             user.setName(user.getPhoneNumber());
+            user = Database.getTable(User.class).getRefreshed(user);
             user.save();
             return user;
         }else {
@@ -330,7 +362,7 @@ public class BecknController extends Controller {
         if (!ObjectUtil.isVoid(billing.getPhone())){
             where.add(new Expression(select.getPool(), "PHONE_NUMBER", Operator.EQ, Phone.sanitizePhoneNumber(billing.getPhone())));
         }
-        List<User> users = select.execute();
+        List<User> users = select.where(where).execute();
         User user = null;
         if (users.isEmpty()){
             user = Database.getTable(User.class).newRecord();
@@ -348,6 +380,7 @@ public class BecknController extends Controller {
         user.setCountryId(Country.findByISO(address.getCountry()).getId());
         user.setCityId(Objects.requireNonNull(City.findByCode(address.getCity())).getId());
         user.setPinCodeId(Objects.requireNonNull(PinCode.find(address.getPinCode())).getId());
+        user = Database.getTable(User.class).getRefreshed(user);
         user.save();
         return user;
     }
@@ -438,20 +471,25 @@ public class BecknController extends Controller {
     /** this is the api called by the protocol adaptor */
     @RequireLogin(false)
     public View api(){
+        Request reply = new Request();
         try  {
             JSONObject object = (JSONObject) JSONValue.parse(new InputStreamReader(getPath().getInputStream()));
             Request request = new Request(object); // Request parser;;
 
             Method method = getClass().getMethod(request.getContext().getAction(),Request.class,Request.class);
             //Based on action, we call the right method here.
-            Request reply = new Request();
             createReplyContext(request,reply);
             method.invoke(this,request,reply);
-            return new BytesView(getPath(),reply.toString().getBytes(StandardCharsets.UTF_8),MimeType.APPLICATION_JSON);
         }catch (Exception ex){
+            Config.instance().getLogger(getClass().getName()).log(Level.WARNING,"BPP Failed" , ex);
+            reply.rm("message");
+            reply.setError(new Error());
+            reply.getError().setCode(ExceptionUtil.getRootCause(ex).toString());
+            reply.getError().setMessage(ExceptionUtil.getRootCause(ex).toString());
+            reply.getError().setType(Type.CORE_ERROR);
             // Do nothing;
         }
-        return no_content();
+        return new BytesView(getPath(),reply.toString().getBytes(StandardCharsets.UTF_8),MimeType.APPLICATION_JSON);
 
     }
     protected View no_content(){

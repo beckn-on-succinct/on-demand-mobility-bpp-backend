@@ -1,6 +1,8 @@
 package in.succinct.bpp.cabs.controller;
 
 import com.venky.swf.controller.ModelController;
+import com.venky.swf.controller.annotations.SingleRecordAction;
+import com.venky.swf.db.Database;
 import com.venky.swf.path.Path;
 import com.venky.swf.views.ForwardedView;
 import com.venky.swf.views.View;
@@ -9,8 +11,8 @@ import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 
 import java.util.List;
 
-public class AuthorizedDriverController extends ModelController<AuthorizedDriver> {
-    public AuthorizedDriverController(Path path) {
+public class AuthorizedDriversController extends ModelController<AuthorizedDriver> {
+    public AuthorizedDriversController(Path path) {
         super(path);
     }
     public View login(){
@@ -22,4 +24,12 @@ public class AuthorizedDriverController extends ModelController<AuthorizedDriver
         return new ForwardedView(getPath(),"/driver_logins","show/"+login.getId());
 
     }
+
+    @SingleRecordAction
+    public View login(long id){
+        DriverLogin login = Database.getTable(getModelClass()).get(id).login();
+        return new ForwardedView(getPath(),"/driver_logins","show/"+login.getId());
+
+    }
+
 }

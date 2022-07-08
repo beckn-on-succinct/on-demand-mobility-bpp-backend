@@ -14,9 +14,11 @@ public interface TariffCard extends Model {
     public String getTag();
     public void setTag(String tag);
 
+    @UNIQUE_KEY
     public Integer getFromKms();
     public void setFromKms(Integer fromKms);
 
+    @UNIQUE_KEY
     public Integer getToKms();
     public void setToKms(Integer toKms);
 

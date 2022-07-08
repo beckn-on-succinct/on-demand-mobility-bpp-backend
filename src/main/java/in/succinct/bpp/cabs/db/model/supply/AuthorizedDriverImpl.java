@@ -21,7 +21,7 @@ public class AuthorizedDriverImpl extends ModelImpl<AuthorizedDriver> {
         DriverLogin login = lastLogin();
         if (login == null || login.getLoggedOffAt() != null ){
             login = Database.getTable(DriverLogin.class).newRecord();
-            login.setAuthorizedDriverId(proxy.getDriverId());
+            login.setAuthorizedDriverId(proxy.getId());
             login.setLoggedInAt(new Timestamp(System.currentTimeMillis()));
             login.save();
 

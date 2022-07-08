@@ -1,6 +1,7 @@
 package in.succinct.bpp.cabs.db.model.demand;
 
 import com.venky.cache.Cache;
+import com.venky.core.string.StringUtil;
 import com.venky.core.util.Bucket;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
@@ -106,9 +107,9 @@ public class TripImpl extends ModelImpl<Trip> {
         }
         if (ObjectUtil.equals(trip.getStatus(),Trip.Ended)){
             TripStop last = getLastStop();
-            return last == null ? null : last.getLat();
+            return last == null ? null : last.getLng();
         }else {
-            return getProxy().getDriverLogin().getLat();
+            return getProxy().getDriverLogin().getLng();
         }
     }
     public void allocate(){
@@ -119,7 +120,7 @@ public class TripImpl extends ModelImpl<Trip> {
         TripStop end = null;
         for (TripStop ts : trip.getTripStops()) {
             distance.increment(ts.getDistanceFromLastStop());
-            time.increment(ts.getMinutesFromLastStop());
+            time.increment(ts.getEstimatedMinutesFromLastStop());
             if (start == null) {
                 start = ts;
             }
@@ -129,14 +130,14 @@ public class TripImpl extends ModelImpl<Trip> {
 
         SortedSet<String> tags = new TreeSet<>();
 
-        StringTokenizer tok = new StringTokenizer(trip.getVehicleTags(),",");
+        StringTokenizer tok = new StringTokenizer(StringUtil.valueOf(trip.getVehicleTags()),",");
         while (tok.hasMoreTokens()){
             tags.add(tok.nextToken().trim());
         }
 
         Select select = new Select().from(TariffCard.class);
         Expression where = new Expression(select.getPool(),Conjunction.AND);
-        if (trip.getReflector().isVoid(trip.getDeploymentPurposeId() )) {
+        if (!trip.getReflector().isVoid(trip.getDeploymentPurposeId() )) {
             where.add(new Expression(select.getPool(), "DEPLOYMENT_PURPOSE_ID", Operator.EQ, trip.getDeploymentPurposeId()));
         }
         if (tags.isEmpty()) {
@@ -152,7 +153,7 @@ public class TripImpl extends ModelImpl<Trip> {
 
         Expression toKmWhere = new Expression(select.getPool(),Conjunction.OR);
         toKmWhere.add(new Expression(select.getPool(), "TO_KMS",Operator.EQ));
-        toKmWhere.add(new Expression(select.getPool(), "TO_KMS",Operator.GE,distance.doubleValue()));
+        toKmWhere.add(new Expression(select.getPool(), "TO_KMS",Operator.GT,distance.doubleValue()));
         where.add(toKmWhere);
 
 
@@ -205,7 +206,9 @@ public class TripImpl extends ModelImpl<Trip> {
                 break;
             }
         }
-
+        if (trip.getDriverLoginId() == null){
+            throw new RuntimeException("No Driver available");
+        }
 
 
     }

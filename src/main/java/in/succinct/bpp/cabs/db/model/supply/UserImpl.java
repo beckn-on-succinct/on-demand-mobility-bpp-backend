@@ -1,6 +1,8 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
 import com.venky.swf.db.table.ModelImpl;
+import com.venky.swf.sql.Expression;
+import com.venky.swf.sql.Select;
 import in.succinct.bpp.cabs.db.model.demand.Trip;
 import in.succinct.bpp.cabs.db.model.demand.TripStop;
 
@@ -17,7 +19,10 @@ public class UserImpl extends ModelImpl<User> {
     }
 
     public List<DriverLogin> getMaxDriverLogins(int max){
-        List<DriverLogin> logins = getChildren(DriverLogin.class,"AUTHORIZED_DRIVER_ID",null,1);
+        Select select = new Select().from(DriverLogin.class);
+        select.add(" where authorized_driver_id in  ( select id from authorized_drivers where driver_id = " + getProxy().getId() + ")");
+
+        List<DriverLogin> logins = select.orderBy("ID DESC").execute(max);
         return logins;
     }
 

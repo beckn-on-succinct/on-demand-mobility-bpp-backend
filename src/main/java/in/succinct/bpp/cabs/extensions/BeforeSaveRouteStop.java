@@ -12,7 +12,10 @@ public class BeforeSaveRouteStop extends BeforeModelSaveExtension<RouteStop> {
     @Override
     public void beforeSave(RouteStop model) {
         if (!ObjectUtil.isVoid(model.getName())){
-            model.getRawRecord().load(NamedStop.find(model.getName()).getRawRecord());
+            NamedStop stop = NamedStop.find(model.getName());
+            if (stop != null) {
+                model.getRawRecord().load(stop.getRawRecord());
+            }
         }
     }
 }

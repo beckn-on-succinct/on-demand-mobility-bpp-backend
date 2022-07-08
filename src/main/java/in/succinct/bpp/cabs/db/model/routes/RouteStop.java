@@ -26,7 +26,8 @@ public interface RouteStop extends Stop {
     public Double getDistanceFromLastStop();
     public void setDistanceFromLastStop(Double distanceFromLastStop);
 
-    public int getEstimatedMinutesFromLastStop();
-    public void setEstimatedMinutesFromLastStop(int minutesFromLastStop);
+    @IS_NULLABLE
+    public Integer getEstimatedMinutesFromLastStop();
+    public void setEstimatedMinutesFromLastStop(Integer minutesFromLastStop);
 
 }

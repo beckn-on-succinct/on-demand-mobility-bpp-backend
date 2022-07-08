@@ -3,6 +3,8 @@ package in.succinct.bpp.cabs.db.model.demand;
 import com.venky.geo.GeoLocation;
 import com.venky.swf.db.annotations.column.IS_NULLABLE;
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
+import com.venky.swf.db.annotations.column.ui.PROTECTION;
+import com.venky.swf.db.annotations.column.ui.PROTECTION.Kind;
 import com.venky.swf.db.annotations.column.validations.Enumeration;
 import com.venky.swf.db.annotations.column.validations.IntegerRange;
 import com.venky.swf.db.annotations.model.MENU;
@@ -74,9 +76,11 @@ public interface Trip extends Model, GeoLocation {
 
 
     @IS_VIRTUAL
+    @PROTECTION(Kind.DISABLED)
     public BigDecimal getLat();
 
     @IS_VIRTUAL
+    @PROTECTION(Kind.DISABLED)
     public BigDecimal getLng();
 
     public List<TripStop>  getTripStops();

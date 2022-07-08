@@ -15,6 +15,7 @@ public interface TripStop extends RouteStop {
     @IS_NULLABLE
     public Long getRouteId();
 
-    public int getMinutesFromLastStop();
-    public void setMinutesFromLastStop(int minutesFromLastStop);
+    @IS_NULLABLE
+    public Integer getMinutesFromLastStop();
+    public void setMinutesFromLastStop(Integer minutesFromLastStop);
 }
