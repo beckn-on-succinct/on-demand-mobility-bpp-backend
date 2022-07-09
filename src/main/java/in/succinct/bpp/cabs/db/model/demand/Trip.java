@@ -52,6 +52,11 @@ public interface Trip extends Model, GeoLocation {
     public void setPassengerId(Long id);
     public User getPassenger();
 
+    public Long getPayerId();
+    public void setPayerId(Long id);
+    public User getPayer();
+
+
     /* Route may be static or dynamic */
     public Long getRouteId();
     public void setRouteId(Long id);

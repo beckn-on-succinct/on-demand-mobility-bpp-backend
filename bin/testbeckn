@@ -1,2 +1,2 @@
 echo curl -H \'content-type:application/json\' -H \'X-CallBackToBeSynchronized:Y\' -H \'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
-curl -H 'content-type:application/json' -H 'X-CallBackToBeSynchronized:Y' -H 'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
+curl -H 'content-type:application/json' -H 'X-CallBackToBeSynchronized:Y' -H 'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json |json_pp

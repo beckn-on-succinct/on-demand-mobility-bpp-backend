@@ -1,6 +1,5 @@
 package in.succinct.bpp.cabs.controller;
 
-import com.venky.clustering.Cluster.Distance;
 import com.venky.core.util.ExceptionUtil;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
@@ -14,7 +13,6 @@ import com.venky.swf.path.Path;
 import com.venky.swf.plugins.collab.db.model.config.City;
 import com.venky.swf.plugins.collab.db.model.config.Country;
 import com.venky.swf.plugins.collab.db.model.config.PinCode;
-import com.venky.swf.plugins.collab.db.model.config.State;
 import com.venky.swf.plugins.collab.db.model.participants.admin.Company;
 import com.venky.swf.plugins.collab.db.model.user.Email;
 import com.venky.swf.plugins.collab.db.model.user.Phone;
@@ -32,6 +30,7 @@ import in.succinct.beckn.BreakUp.BreakUpElement;
 import in.succinct.beckn.Catalog;
 import in.succinct.beckn.Categories;
 import in.succinct.beckn.Category;
+import in.succinct.beckn.Contact;
 import in.succinct.beckn.Context;
 import in.succinct.beckn.Descriptor;
 import in.succinct.beckn.Error;
@@ -45,6 +44,7 @@ import in.succinct.beckn.Location;
 import in.succinct.beckn.Locations;
 import in.succinct.beckn.Message;
 import in.succinct.beckn.Order;
+import in.succinct.beckn.Person;
 import in.succinct.beckn.Price;
 import in.succinct.beckn.Provider;
 import in.succinct.beckn.Providers;
@@ -57,6 +57,7 @@ import in.succinct.bpp.cabs.db.model.demand.TripStop;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
+import org.apache.commons.math3.analysis.function.Add;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -64,8 +65,6 @@ import org.json.simple.JSONValue;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -90,6 +89,11 @@ public class BecknController extends Controller {
             trip.setStatus(Trip.Confirmed);
             trip.save();
         }
+        return trip;
+    }
+    private Trip getTripFromOrderId(String orderId){
+        String tripId = getLocalUniqueId(orderId,Entity.order);
+        Trip trip = Database.getTable(Trip.class).get(Long.parseLong(tripId));
         return trip;
     }
 
@@ -204,6 +208,8 @@ public class BecknController extends Controller {
 
     public Order getBecknOrder(Trip trip, Request reply){
         Order order = new Order();
+        order.setId(getBecknId(trip.getId(),Entity.order,reply.getContext()));
+        order.setState(trip.getStatus());
         Provider provider = new Provider();
         order.setProvider(provider);
         setProvider(trip,provider,reply.getContext());
@@ -211,11 +217,55 @@ public class BecknController extends Controller {
         setItems(trip,provider,reply.getContext());
         setProviderLocations(trip,provider,reply.getContext());
         setFulfillment(trip,order,reply.getContext());
-        if (ObjectUtil.equals(trip.getStatus(),Trip.UnConfirmed)){
-            setQuote(trip,order,reply.getContext());
-        }
+        setCustomer(trip,order,reply.getContext());
+        setBilled(trip,order,reply.getContext());
+        setQuote(trip,order,reply.getContext());
 
         return order;
+    }
+
+    private void setBilled(Trip trip, Order order, Context context) {
+        if (trip.getPayerId() == null){
+            return;
+        }
+        Billing billing = new Billing();
+        Address address = new Address();
+        billing.setAddress(address);
+        order.setBilling(billing);
+
+        User payer = trip.getPayer();
+        billing.setEmail(payer.getEmail());
+        billing.setPhone(payer.getPhoneNumber());
+        billing.setName(payer.getLongName());
+        if (payer.getPinCodeId() != null) {
+            address.setAreaCode(payer.getPinCode().getPinCode());
+        }
+        if (payer.getCityId() != null) {
+            address.setCity(payer.getCity().getCode());
+        }
+        if (payer.getCountryId() != null){
+            address.setCountry(payer.getCountry().getIsoCode());
+        }
+        address.setName(payer.getAddressLine1());
+        String[] line2 = payer.getAddressLine2().split(",");
+
+        address.setDoor(line2[0]);
+        address.setBuilding(payer.getAddressLine2().substring(line2[0].length()));
+        address.setLocality(payer.getAddressLine3());
+    }
+
+    private void setCustomer(Trip trip, Order order, Context context) {
+        if (trip.getPassengerId() == null){
+            return;
+        }
+        in.succinct.beckn.User customer = new in.succinct.beckn.User();
+        order.getFulfillment().setCustomer(customer);
+        customer.setContact(new Contact());
+        customer.setPerson(new Person());
+        Contact contact =customer.getContact();
+        contact.setEmail(trip.getPassenger().getEmail());
+        contact.setPhone(trip.getPassenger().getPhoneNumber());
+
     }
 
     @RequireLogin(false)
@@ -232,6 +282,10 @@ public class BecknController extends Controller {
     }
     @RequireLogin(false)
     public View confirm(){
+        return api();
+    }
+    @RequireLogin(false)
+    public View status(){
         return api();
     }
 
@@ -328,6 +382,13 @@ public class BecknController extends Controller {
         reply.setMessage(new Message());
         reply.getMessage().setOrder(tripOrder);
     }
+    public void status(Request request,Request reply){
+        Message message = request.getMessage();
+        Trip trip = getTripFromOrderId(message.get("order_id"));
+        Order tripOrder = getBecknOrder(trip,reply);
+        reply.setMessage(new Message());
+        reply.getMessage().setOrder(tripOrder);
+    }
     public User ensurePassenger(in.succinct.beckn.User passenger){
         Select select = new Select().from(User.class);
         Expression where = new Expression(select.getPool(), Conjunction.AND);
@@ -388,11 +449,17 @@ public class BecknController extends Controller {
     public void init(Request request,Request reply){
         Order order = request.getMessage().getOrder();
         Trip trip = getTrip(order.getFulfillment().getId(),false);
+
         in.succinct.beckn.User passenger = order.getFulfillment().getCustomer();
         User user = ensurePassenger(passenger);
+        trip.setPassengerId(user.getId());
+
+
+
         Billing billing = order.getBilling();
         User biller = ensureBiller(billing);
-
+        trip.setPayerId(biller.getId());
+        trip.save();
 
         Order tripOrder = getBecknOrder(trip,reply);
         reply.setMessage(new Message());
