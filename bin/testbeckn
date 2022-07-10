@@ -1,2 +1,21 @@
-echo curl -H \'content-type:application/json\' -H \'X-CallBackToBeSynchronized:Y\' -H \'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
-curl -H 'content-type:application/json' -H 'X-CallBackToBeSynchronized:Y' -H 'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json |json_pp
+
+if [ $# -eq 0 ] 
+then 
+    echo $0 "search|select|init|confirm|status" 
+    exit 0 
+fi
+ADDITONAL_HEADER="X-CallBackToBeSynchronized:Y" 
+if [ $# > 1 ] 
+then
+    if [ "$2" == "async" ] 
+    then 
+       ADDITONAL_HEADER="X-CallBackToBeSynchronized:N" 
+    fi
+fi
+
+echo curl -H \'content-type:application/json\' -H \'$ADDITONAL_HEADER\' -H \'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
+
+
+curl -H 'content-type:application/json' -H $ADDITONAL_HEADER -H 'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json |json_pp
+
+
