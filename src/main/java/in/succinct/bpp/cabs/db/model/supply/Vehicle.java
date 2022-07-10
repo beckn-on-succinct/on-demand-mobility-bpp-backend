@@ -48,9 +48,6 @@ public interface Vehicle extends Model, Tagable {
 
     @IS_VIRTUAL
     public boolean isVerified();
-    
-    @IS_VIRTUAL
-    public Timestamp getDateOfRegister();
 
 
     List<AuthorizedDriver> getAuthorizedDrivers();

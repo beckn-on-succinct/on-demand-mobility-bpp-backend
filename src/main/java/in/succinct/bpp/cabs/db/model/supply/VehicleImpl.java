@@ -44,9 +44,4 @@ public class VehicleImpl extends ModelImpl<Vehicle> {
         }
         return tagSet;
     }
-
-    public Timestamp getDateOfRegister(){
-        Vehicle vehicle = getProxy();
-        return vehicle.getCreatedAt();
-    }
 }
