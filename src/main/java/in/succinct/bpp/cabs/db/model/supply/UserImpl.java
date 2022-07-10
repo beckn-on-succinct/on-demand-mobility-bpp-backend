@@ -82,7 +82,7 @@ public class UserImpl extends ModelImpl<User> {
         return true;
     }
 
-    public Timestamp isDateOfJoining(){
+    public Timestamp getDateOfJoining(){
         User user = getProxy();
         return user.getCreatedAt();
     }

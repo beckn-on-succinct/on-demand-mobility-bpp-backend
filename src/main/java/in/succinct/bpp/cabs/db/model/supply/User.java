@@ -38,6 +38,6 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     public boolean isVerified();
 
     @IS_VIRTUAL
-    public Timestamp isDateOfJoining();
+    public Timestamp getDateOfJoining();
 
 }
