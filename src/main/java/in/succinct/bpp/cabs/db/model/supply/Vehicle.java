@@ -13,6 +13,7 @@ import com.venky.swf.db.annotations.model.HAS_DESCRIPTION_FIELD;
 import com.venky.swf.db.annotations.model.MENU;
 import com.venky.swf.db.model.Model;
 import in.succinct.bpp.cabs.db.model.tag.Tagable;
+import com.venky.swf.db.annotations.column.validations.Enumeration;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -32,8 +33,6 @@ public interface Vehicle extends Model, Tagable {
     @UNIQUE_KEY
     public String getVehicleNumber();
     public void setVehicleNumber(String vehicleNumber);
-
-
 
     @Index
     @WATERMARK("Comma Separated Values")
