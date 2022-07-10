@@ -8,6 +8,7 @@ import in.succinct.bpp.cabs.db.model.demand.Trip;
 
 import java.sql.Date;
 import java.util.List;
+import java.sql.Timestamp;
 
 public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     @IS_VIRTUAL
@@ -35,5 +36,8 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
 
     @IS_VIRTUAL
     public boolean isVerified();
+
+    @IS_VIRTUAL
+    public Timestamp isDateOfJoining();
 
 }

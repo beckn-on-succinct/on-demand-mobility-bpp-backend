@@ -2,6 +2,7 @@ package in.succinct.bpp.cabs.db.model.supply;
 
 import com.venky.swf.db.table.ModelImpl;
 
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -42,5 +43,10 @@ public class VehicleImpl extends ModelImpl<Vehicle> {
             }
         }
         return tagSet;
+    }
+
+    public Timestamp isDateOfRegister(){
+        Vehicle vehicle = getProxy();
+        return vehicle.getCreatedAt();
     }
 }

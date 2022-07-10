@@ -1,17 +1,16 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
-import com.venky.swf.db.table.ModelImpl;
-import com.venky.swf.sql.Expression;
-import com.venky.swf.sql.Select;
-import in.succinct.bpp.cabs.db.model.demand.Trip;
-import in.succinct.bpp.cabs.db.model.demand.TripStop;
-
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import com.venky.swf.db.table.ModelImpl;
+import com.venky.swf.sql.Select;
+
+import in.succinct.bpp.cabs.db.model.demand.Trip;
+import in.succinct.bpp.cabs.db.model.demand.TripStop;
 
 public class UserImpl extends ModelImpl<User> {
     public UserImpl(User u){
@@ -82,4 +81,10 @@ public class UserImpl extends ModelImpl<User> {
         }
         return true;
     }
+
+    public Timestamp isDateOfJoining(){
+        User user = getProxy();
+        return user.getCreatedAt();
+    }
+
 }
