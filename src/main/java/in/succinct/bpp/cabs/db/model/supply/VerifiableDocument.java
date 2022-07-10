@@ -57,5 +57,7 @@ public interface VerifiableDocument  {
     public String getImageUrl();
     public void setImageUrl(String imageUrl);
 
+    public String getDocumentNumber();
+    public void setDocumentNumber(String documentNumber);
 
 }

@@ -33,19 +33,6 @@ public interface Vehicle extends Model, Tagable {
     @UNIQUE_KEY
     public String getVehicleNumber();
     public void setVehicleNumber(String vehicleNumber);
-    
-    public String getVehicleModel();
-    public void setVehicleModel(String vehicleModel);
-
-    public String getVehicleManufacturer();
-    public void seVehicleManufacturer(String vehicleManufacturer);
-    
-    public String getVehicleFuelType();
-    public void seVehicleFuelType(String vehicleFuelType);
-
-    @Enumeration("DIESEL,CNG,PETROL,HYBRID,ELECTRIC")
-    public String getVehicleType();
-    public void seVehicleType(String vehicleType);
 
     @Index
     @WATERMARK("Comma Separated Values")
