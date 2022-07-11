@@ -40,4 +40,11 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     @IS_VIRTUAL
     public Timestamp getDateOfJoining();
 
+    public static final String ROLE_DRIVER = "DRIVER";
+    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_AGENT = "AGENT";
+    public static final String ROLE_VEHICLE_OWNER = "VEHICLE_OWNER";
+
+    public static final String[] ALLOWED_ROLES = new String[]{ROLE_DRIVER,ROLE_ADMIN,ROLE_AGENT,ROLE_VEHICLE_OWNER};
+
 }
