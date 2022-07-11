@@ -1,6 +1,7 @@
 package in.succinct.bpp.cabs.controller;
 
 import com.venky.cache.Cache;
+import com.venky.core.util.Bucket;
 import com.venky.swf.controller.VirtualModelController;
 import com.venky.swf.db.Database;
 import com.venky.swf.path.Path;
@@ -37,45 +38,30 @@ public class UserSummariesController extends VirtualModelController<UserSummary>
                         UserSummary userSummary = Database.getTable(UserSummary.class).newRecord();
                         userSummary.setCompanyId(c);
                         userSummary.setRoleId(r);
+                        userSummary.setUnverifiedUserCount(new Bucket());
+                        userSummary.setUserCount(new Bucket());
                         return userSummary;
                     }
                 };
             }
         };
 
+        List<UserSummary> out =new ArrayList<>();
+        new Select().from(User.class).where(new Expression(getReflector().getPool(),"COMPANY_ID", Operator.IN,companyIds.toArray())).execute(User.class).forEach(u->{
+            u.getUserRoles().forEach(ur->{
+                UserSummary summary = map.get(u.getCompanyId()).get(ur.getRoleId());
+                if (!u.isVerified()){
+                    summary.getUnverifiedUserCount().increment();
+                }
+                summary.getUserCount().increment();
+            });
+        });
 
-        Select select =new Select("1 AS ID", "COMPANY_ID",
-                "COUNT(1) AS USER_COUNT",
-                "ROLES.ID AS ROLE_ID"
-        ).from(User.class, UserRole.class, Role.class).where(new Expression(getReflector().getPool(),"COMPANY_ID", Operator.IN,companyIds.toArray()));
-
-        select.add(" AND user_roles.user_id = users.id and roles.id = user_roles.role_id");
-        select.groupBy("COMPANY_ID","ROLE_ID");
-        for (UserSummary userSummary : select.execute(UserSummary.class)) {
-            map.get(userSummary.getCompanyId()).put(userSummary.getRoleId(),userSummary);
-        }
-
-
-        select =new Select("1 AS ID", "COMPANY_ID",
-                "COUNT(1) AS UNVERIFIED_USER_COUNT",
-                "ROLES.ID AS ROLE_ID"
-        ).from(User.class, UserRole.class, Role.class).where(new Expression(getReflector().getPool(),"COMPANY_ID", Operator.IN,companyIds.toArray()));
-
-        select.add(" AND user_roles.user_id = users.id and roles.id = user_roles.role_id and  ( exists (select 1 from driver_documents where " +
-                                                "driver_documents.driver_id = users.id and driver_documents.verified = false ) or not exists (select 1 from driver_documents where " +
-                                                "driver_documents.driver_id = users.id  ) )");
-        select.groupBy("COMPANY_ID","ROLE_ID");
-        for (UserSummary userSummary : select.execute(UserSummary.class)) {
-            UserSummary old = map.get(userSummary.getCompanyId()).get(userSummary.getRoleId());
-            old.setUnverifiedUserCount(userSummary.getUnverifiedUserCount());
-        }
-        List<UserSummary> out = new ArrayList<>();
-        for (Long c: map.keySet()){
-            for (Long  r: map.get(c).keySet()){
+        for (Long c : map.keySet()) {
+            for (Long r : map.get(c).keySet()){
                 out.add(map.get(c).get(r));
             }
         }
-
 
 
         return list(out,true);

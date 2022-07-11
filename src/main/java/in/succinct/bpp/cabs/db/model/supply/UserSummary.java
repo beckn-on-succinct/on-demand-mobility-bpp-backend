@@ -12,12 +12,12 @@ public interface UserSummary extends Model {
     public void setCompanyId(Long id);
     public Company getCompany();
 
-    public int getUserCount();
-    public void setUserCount(int userCount);
+    public Bucket getUserCount();
+    public void setUserCount(Bucket userCount);
 
 
-    public int getUnverifiedUserCount();
-    public void setUnverifiedUserCount(int userCount);
+    public Bucket getUnverifiedUserCount();
+    public void setUnverifiedUserCount(Bucket userCount);
 
 
     public Long getRoleId();
