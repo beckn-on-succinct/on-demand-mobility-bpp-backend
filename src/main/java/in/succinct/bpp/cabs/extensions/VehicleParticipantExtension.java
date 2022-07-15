@@ -16,7 +16,7 @@ public class VehicleParticipantExtension extends ParticipantExtension<Vehicle> {
     @Override
     protected List<Long> getAllowedFieldValues(User user, Vehicle partiallyFilledModel, String fieldName) {
         in.succinct.bpp.cabs.db.model.supply.User u = user.getRawRecord().getAsProxy(in.succinct.bpp.cabs.db.model.supply.User.class);;
-        if (ObjectUtil.equals(fieldName,"CREATOR_USER_ID")){
+        if (ObjectUtil.equals(fieldName,"CREATOR_ID")){
             if (u.isStaff() ){
                 return null;
             }else {
