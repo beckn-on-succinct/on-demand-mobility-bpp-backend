@@ -14,6 +14,9 @@ public class AfterSaveUser extends AfterModelSaveExtension<User> {
     @Override
     public void afterSave(User model) {
         Role role = Role.getRole("DRIVER");
+        if (role == null){
+            return;
+        }
         boolean isDriver = model.getUserRoles().stream().anyMatch(userRole -> userRole.getRoleId() == role.getId());
         if (!isDriver){
             UserRole userRole = Database.getTable(UserRole.class).newRecord();

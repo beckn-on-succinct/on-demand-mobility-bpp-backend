@@ -30,6 +30,4 @@ public interface DriverDocument extends Model,VerifiableDocument, Address {
     public String getLongName();
     public void setLongName(String longName);
 
-
-
 }
