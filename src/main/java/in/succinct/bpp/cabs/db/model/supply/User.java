@@ -46,5 +46,4 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     public static final String ROLE_VEHICLE_OWNER = "VEHICLE_OWNER";
 
     public static final String[] ALLOWED_ROLES = new String[]{ROLE_DRIVER,ROLE_ADMIN,ROLE_AGENT,ROLE_VEHICLE_OWNER};
-
 }
