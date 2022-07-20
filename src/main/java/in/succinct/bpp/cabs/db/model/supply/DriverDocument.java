@@ -14,7 +14,7 @@ public interface DriverDocument extends Model,VerifiableDocument, Address {
     public void setDriverId(Long id);
     public User getDriver();
 
-    // public static final String AADHAR = "Aadhar";
+    public static final String AADHAR = "Aadhar";
     public static final String PAN = "Pan";
     public static final String LICENSE = "Licence";
     static final String[] DOCUMENTS_NEEDED = new String[]{LICENSE,PAN};

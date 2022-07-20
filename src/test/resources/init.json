@@ -7,31 +7,30 @@
   "message": {
     "order": {
       "fulfillment": {
-        "id" : "./mobility/ind.blr/340@becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in.fulfillment",
+        "id" : "./mobility/ind.blr/463@becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in.fulfillment",
         "customer": {
           "person": {
-            "name": "./Venky/Mr./Venky/ /Mahadevan/",
+            "name": "./Rajat/Mr./Rajat/ /Kumar/",
             "gender": "male"
           },
           "contact": {
-            "phone": "+919845114558",
-            "email": "venky@example.com"
+            "phone": "+919867654322",
+            "email": "er.rjtkumar@gmail.com"
           }
         }
       },
       "billing": {
         "address": {
-          "door": "A302",
-          "country": "IND",
-          "city": "std:080",
-          "street": "Bannergatta Road",
-          "area_code": "560076",
-          "state": "KA",
-          "building": "Pride Apartments"
+              "door": "MBT",
+              "country": "IND",
+              "city": "std:080",
+              "area_code": "560078",
+              "state": "KA",
+              "building": "A33"
         },
-        "phone": "9845114558",
-        "name": "./Venky/Mr./Venky/ /Mahadevan/",
-        "email": "venkatramanm@gmail.com"
+        "phone": "+919867654322",
+        "name": "./Rajat/Mr./Rajat/ /Kumar/",
+        "email": "er.rjtkumar@gmail.com"
       }
     }
   }

@@ -215,6 +215,7 @@ public class BecknController extends Controller {
         setProvider(trip,provider,reply.getContext());
         setCategories(trip,provider,reply.getContext());
         setItems(trip,provider,reply.getContext());
+        order.setItems(provider.getItems());
         setProviderLocations(trip,provider,reply.getContext());
         setFulfillment(trip,order,reply.getContext());
         setCustomer(trip,order,reply.getContext());
@@ -246,12 +247,17 @@ public class BecknController extends Controller {
         if (payer.getCountryId() != null){
             address.setCountry(payer.getCountry().getIsoCode());
         }
-        address.setName(payer.getAddressLine1());
-        String[] line2 = payer.getAddressLine2().split(",");
-
-        address.setDoor(line2[0]);
-        address.setBuilding(payer.getAddressLine2().substring(line2[0].length()));
-        address.setLocality(payer.getAddressLine3());
+        if (payer.getAddressLine1() != null) {
+            address.setName(payer.getAddressLine1());
+        }
+        if (payer.getAddressLine2() != null) {
+            String[] line2 = payer.getAddressLine2().split(",");
+            address.setDoor(line2[0]);
+            address.setBuilding(payer.getAddressLine2().substring(line2[0].length()));
+        }
+        if (payer.getAddressLine3()  != null) {
+            address.setLocality(payer.getAddressLine3());
+        }
     }
 
     private void setCustomer(Trip trip, Order order, Context context) {
@@ -435,6 +441,9 @@ public class BecknController extends Controller {
             user = users.get(0);
         }
         Address address = billing.getAddress();
+        if (ObjectUtil.isVoid(address.getName())) {
+            address.setName(billing.getName());
+        }
         user.setAddressLine1(address.getName());
         user.setAddressLine2(address.getDoor() + "," + address.getBuilding());
         user.setAddressLine3(address.getLocality());

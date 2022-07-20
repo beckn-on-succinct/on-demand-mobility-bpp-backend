@@ -1,4 +1,7 @@
+#!/bin/bash 
+source ~/.bash_aliases
 
+source overrideProperties/config/envvars
 if [ $# -eq 0 ] 
 then 
     echo $0 "search|select|init|confirm|status" 
@@ -13,9 +16,9 @@ then
     fi
 fi
 
-echo curl -H \'content-type:application/json\' -H \'$ADDITONAL_HEADER\' -H \'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
+echo curl -H \'content-type:application/json\' -H \'$ADDITONAL_HEADER\' -H \'Authorization: Basic ${test_auth}\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
 
 
-curl -H 'content-type:application/json' -H $ADDITONAL_HEADER -H 'Authorization: Basic Zmlyc3RBcHA6dmVua3kxMg==' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json |json_pp
+curl -v -L -H 'content-type:application/json' -H $ADDITONAL_HEADER -H 'Authorization: Basic '${test_auth}'' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json |json_pp
 
 
