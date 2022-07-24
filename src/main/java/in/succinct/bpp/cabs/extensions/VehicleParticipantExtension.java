@@ -20,7 +20,7 @@ public class VehicleParticipantExtension extends ParticipantExtension<Vehicle> {
         if (ObjectUtil.equals(fieldName,"CREATOR_USER_ID")){
             if (u.isStaff() ){
                 if (u.getCompanyId()  != null){
-                    return DataSecurityFilter.getIds(DataSecurityFilter.getRecordsAccessible(User.class,user));
+                    return DataSecurityFilter.getIds(u.getCompany().getUsers());
                 }else {
                     return null;
                 }
