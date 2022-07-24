@@ -4,6 +4,7 @@ import com.venky.core.util.ObjectUtil;
 import com.venky.swf.db.extensions.ParticipantExtension;
 import com.venky.swf.db.model.User;
 import com.venky.swf.plugins.calendar.db.model.WorkCalendar;
+import com.venky.swf.pm.DataSecurityFilter;
 import in.succinct.bpp.cabs.db.model.supply.Vehicle;
 
 import java.util.Arrays;
@@ -18,7 +19,11 @@ public class VehicleParticipantExtension extends ParticipantExtension<Vehicle> {
         in.succinct.bpp.cabs.db.model.supply.User u = user.getRawRecord().getAsProxy(in.succinct.bpp.cabs.db.model.supply.User.class);;
         if (ObjectUtil.equals(fieldName,"CREATOR_ID")){
             if (u.isStaff() ){
-                return null;
+                if (u.getCompanyId()  != null){
+                    return DataSecurityFilter.getIds(u.getCompany().getUsers());
+                }else {
+                    return null;
+                }
             }else {
                 return Arrays.asList(user.getId());
             }
