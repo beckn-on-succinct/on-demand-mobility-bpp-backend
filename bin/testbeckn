@@ -8,7 +8,7 @@ then
     exit 0 
 fi
 ADDITONAL_HEADER="X-CallBackToBeSynchronized:Y" 
-if [ $# > 1 ] 
+if [ $# -gt 1 ] 
 then
     if [ "$2" == "async" ] 
     then 
@@ -19,6 +19,6 @@ fi
 echo curl -H \'content-type:application/json\' -H \'$ADDITONAL_HEADER\' -H \'Authorization: Basic ${test_auth}\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
 
 
-curl -v -L -H 'content-type:application/json' -H $ADDITONAL_HEADER -H 'Authorization: Basic '${test_auth}'' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json |json_pp
+curl -v -L -H 'content-type:application/json' -H $ADDITONAL_HEADER -H 'Authorization: Basic '${test_auth}'' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json  |json_pp
 
 
