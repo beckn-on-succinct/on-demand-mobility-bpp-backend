@@ -1,6 +1,7 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
 import com.venky.swf.db.Database;
+import com.venky.swf.db.model.User;
 import com.venky.swf.db.table.ModelImpl;
 
 import java.sql.Timestamp;
@@ -18,6 +19,9 @@ public class AuthorizedDriverImpl extends ModelImpl<AuthorizedDriver> {
 
     public DriverLogin login(){
         AuthorizedDriver proxy = getProxy();
+        if (proxy.getRawRecord().isNewRecord()){
+            proxy.save();
+        }
         DriverLogin login = lastLogin();
         if (login == null || login.getLoggedOffAt() != null ){
             login = Database.getTable(DriverLogin.class).newRecord();
