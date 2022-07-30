@@ -1,11 +1,15 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
+package in.succinct.bpp.cabs.db.model.service;
+
 import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
+import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
 import com.venky.swf.db.annotations.column.validations.Enumeration;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.plugins.collab.db.model.participants.admin.Address;
 
 import java.sql.Date;
+import java.util.List;
 
 public interface DriverDocument extends Model,VerifiableDocument, Address {
 
@@ -29,5 +33,8 @@ public interface DriverDocument extends Model,VerifiableDocument, Address {
 
     public String getLongName();
     public void setLongName(String longName);
+
+    @CONNECTED_VIA(value = "MODEL_ID", additional_join = "((NAME = 'DriverDocument'))")
+	public List<ModelAudit> getAudits();
 
 }

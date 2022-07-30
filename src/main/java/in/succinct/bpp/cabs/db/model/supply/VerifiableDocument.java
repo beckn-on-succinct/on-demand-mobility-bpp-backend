@@ -4,12 +4,14 @@ import com.venky.swf.db.annotations.column.COLUMN_DEF;
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.PASSWORD;
 import com.venky.swf.db.annotations.column.defaulting.StandardDefault;
+import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
 import com.venky.swf.db.annotations.column.ui.HIDDEN;
 import com.venky.swf.db.annotations.column.ui.PROTECTION;
 import com.venky.swf.db.annotations.column.ui.PROTECTION.Kind;
 
 import java.io.InputStream;
 import java.sql.Date;
+import java.util.List;
 
 public interface VerifiableDocument  {
 
@@ -59,5 +61,8 @@ public interface VerifiableDocument  {
 
     public String getDocumentNumber();
     public void setDocumentNumber(String documentNumber);
+
+    public String getRemarks();
+    public void setRemarks(String remarks);
 
 }
