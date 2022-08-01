@@ -52,6 +52,9 @@ public class TripImpl extends ModelImpl<Trip> {
                 getWhereClause(DriverLogin.class).
                 add(loggedInDriver);
 
+
+        Database.getInstance().getCache(ref).clear(); //Bug in Select
+
         Select select = new Select().from(DriverLogin.class).where(expression);
         select.add(" and exists (select " +
                 "1 from authorized_drivers a,  vehicles v , vehicle_deployment_purposes dp where a.id = driver_logins.authorized_driver_id " +
