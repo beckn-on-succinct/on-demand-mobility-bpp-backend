@@ -140,7 +140,7 @@ public class TripImpl extends ModelImpl<Trip> {
         if (!trip.getReflector().isVoid(trip.getDeploymentPurposeId() )) {
             where.add(new Expression(select.getPool(), "DEPLOYMENT_PURPOSE_ID", Operator.EQ, trip.getDeploymentPurposeId()));
         }
-        if (tags.isEmpty()) {
+        if (!tags.isEmpty()) {
             where.add(new Expression(select.getPool(), "TAG", Operator.IN, tags.toArray()));
         }else {
             where.add(new Expression(select.getPool(), "TAG", Operator.EQ));
