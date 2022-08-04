@@ -27,8 +27,10 @@ public interface Trip extends Model, GeoLocation {
     public static  final String Started = "Started";
     public static  final String Ended = "Ended";
 
+    public static  final String Canceled = "Canceled";
 
-    @Enumeration(UnConfirmed +"," + Confirmed + "," + Started  + "," + Ended)
+
+    @Enumeration(UnConfirmed +"," + Confirmed + "," + Started  + "," + Ended + "," + Canceled)
     public String getStatus();
     public void setStatus(String status);
 
