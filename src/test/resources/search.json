@@ -1,4 +1,5 @@
 {
+
     "context": { "city": "std:080" , "bpp_id" : "becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in"},
   "message": {
     "intent": {
@@ -17,3 +18,4 @@
         }
   }
 }
+

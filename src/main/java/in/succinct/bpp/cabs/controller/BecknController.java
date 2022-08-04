@@ -294,6 +294,10 @@ public class BecknController extends Controller {
     public View status(){
         return api();
     }
+    @RequireLogin(false)
+    public View cancel(){
+        return api();
+    }
 
 
 
@@ -478,6 +482,18 @@ public class BecknController extends Controller {
     public void confirm(Request request, Request reply){
         Order order = request.getMessage().getOrder();
         Trip trip = getTrip(order.getFulfillment().getId(),true);
+        Order tripOrder = getBecknOrder(trip,reply);
+        reply.setMessage(new Message());
+        reply.getMessage().setOrder(tripOrder);
+    }
+
+    public void cancel(Request request,Request reply){
+        Message message = request.getMessage();
+        Trip trip = getTripFromOrderId(message.get("order_id"));
+        if (trip!= null){
+            trip.setStatus(Trip.Canceled);
+            trip.save();
+        }
         Order tripOrder = getBecknOrder(trip,reply);
         reply.setMessage(new Message());
         reply.getMessage().setOrder(tripOrder);
