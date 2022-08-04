@@ -22,14 +22,14 @@ public class AuthorizedDriversController extends ModelController<AuthorizedDrive
             throw  new RuntimeException("You need to pass only one Driver's login information.");
         }
         DriverLogin login = authorizedDriverList.get(0).login();
-        return new RedirectorView(getPath(),"/driver_logins","show/"+login.getId());
+        return new ForwardedView(getPath(),"/driver_logins","show/"+login.getId());
 
     }
 
     @SingleRecordAction
     public View login(long id){
         DriverLogin login = Database.getTable(getModelClass()).get(id).login();
-        return new RedirectorView(getPath(),"/driver_logins","show/"+login.getId());
+        return new ForwardedView(getPath(),"/driver_logins","show/"+login.getId());
 
     }
 

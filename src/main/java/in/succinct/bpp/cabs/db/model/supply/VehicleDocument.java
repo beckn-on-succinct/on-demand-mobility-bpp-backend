@@ -1,13 +1,15 @@
 package in.succinct.bpp.cabs.db.model.supply;
-package in.succinct.bpp.cabs.db.model.service;
+
+import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
+import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
+import com.venky.swf.db.annotations.column.validations.Enumeration;
+import com.venky.swf.db.model.Model;
+import com.venky.swf.plugins.audit.db.model.AUDITED;
+import in.succinct.bpp.cabs.db.model.service.ModelAudit;
 
 import java.util.List;
 
-import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
-import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
-import com.venky.swf.db.annotations.column.validations.Enumeration;
-import com.venky.swf.db.model.Model;
-
+@AUDITED
 public interface VehicleDocument extends VerifiableDocument, Model {
     String[] DOCUMENTS_NEEDED = new String[]{"RC","FITNESS","INSURANCE"};
 

@@ -1,16 +1,17 @@
 package in.succinct.bpp.cabs.db.model.supply;
 
-package in.succinct.bpp.cabs.db.model.service;
-
 import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
 import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
 import com.venky.swf.db.annotations.column.validations.Enumeration;
 import com.venky.swf.db.model.Model;
+import com.venky.swf.plugins.audit.db.model.AUDITED;
 import com.venky.swf.plugins.collab.db.model.participants.admin.Address;
+import in.succinct.bpp.cabs.db.model.service.ModelAudit;
 
 import java.sql.Date;
 import java.util.List;
 
+@AUDITED
 public interface DriverDocument extends Model,VerifiableDocument, Address {
 
     @PARTICIPANT
