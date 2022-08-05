@@ -181,29 +181,26 @@ public class BecknController extends Controller {
         setFulfillment(trip,fulfillment,context);
     }
     public void setQuote(Trip trip, Order order, Context context) {
-        if (ObjectUtil.equals(trip.getStatus(),Trip.UnConfirmed)){
-            Quote quote = new Quote();
-            order.setQuote( quote);
-            quote.setPrice(new Price());
-            quote.getPrice().setValue(trip.getSellingPrice());
-            quote.getPrice().setCurrency("INR");
-            BreakUp breakUp = new BreakUp();
-            quote.setBreakUp(breakUp);
+        Quote quote = new Quote();
+        order.setQuote( quote);
+        quote.setPrice(new Price());
+        quote.getPrice().setValue(trip.getSellingPrice());
+        quote.getPrice().setCurrency("INR");
+        BreakUp breakUp = new BreakUp();
+        quote.setBreakUp(breakUp);
 
-            Price price = new Price();
-            BreakUpElement fareBreakup = breakUp.createElement("item","Fare",price);
-            price.setCurrency("INR");
-            price.setValue(trip.getPrice());
+        Price price = new Price();
+        BreakUpElement fareBreakup = breakUp.createElement("item","Fare",price);
+        price.setCurrency("INR");
+        price.setValue(trip.getPrice());
 
-            Price tax = new Price();
-            BreakUpElement taxBreakup = breakUp.createElement("item","Tax",tax);
-            TypeConverter<Double> typeConverter = trip.getReflector().getJdbcTypeHelper().getTypeRef(double.class).getTypeConverter();
-            tax.setValue(typeConverter.valueOf(trip.getCGst()) +typeConverter.valueOf(trip.getIGst()) + typeConverter.valueOf((trip.getSGst())));
-            tax.setCurrency("INR");
-            breakUp.add(fareBreakup);
-            breakUp.add(taxBreakup);
-
-        }
+        Price tax = new Price();
+        BreakUpElement taxBreakup = breakUp.createElement("item","Tax",tax);
+        TypeConverter<Double> typeConverter = trip.getReflector().getJdbcTypeHelper().getTypeRef(double.class).getTypeConverter();
+        tax.setValue(typeConverter.valueOf(trip.getCGst()) +typeConverter.valueOf(trip.getIGst()) + typeConverter.valueOf((trip.getSGst())));
+        tax.setCurrency("INR");
+        breakUp.add(fareBreakup);
+        breakUp.add(taxBreakup);
     }
 
     public Order getBecknOrder(Trip trip, Request reply){
