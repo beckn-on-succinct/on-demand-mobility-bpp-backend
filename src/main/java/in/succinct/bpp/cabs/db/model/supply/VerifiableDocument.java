@@ -20,8 +20,14 @@ public interface VerifiableDocument  {
 
     @PROTECTION(Kind.NON_EDITABLE)
     @COLUMN_DEF(StandardDefault.BOOLEAN_FALSE)
+    public boolean isRejected();
+
+    @PROTECTION(Kind.NON_EDITABLE)
+    @COLUMN_DEF(StandardDefault.BOOLEAN_FALSE)
     public boolean isVerified();
     public void setVerified(boolean verified);
+
+    public void setRejected(boolean rejected);
 
 
     public Date getValidFrom();
