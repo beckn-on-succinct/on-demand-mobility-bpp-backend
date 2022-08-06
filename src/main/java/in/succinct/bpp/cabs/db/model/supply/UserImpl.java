@@ -66,11 +66,11 @@ public class UserImpl extends ModelImpl<User> {
         return availableAt != null && availableAt.getTime() < System.currentTimeMillis() + 10 * 60 * 60 * 1000L ;
     }
 
-    public boolean isVerified(){
+    public boolean isApproved(){
         User u = getProxy();
         Set<String> validatedDocuments = new HashSet<>();
         u.getDriverDocuments().forEach(d->{
-            if (d.isVerified() && !d.isExpired()) {
+            if (d.getVerificationStatus().equals(VerifiableDocument.APPROVED) && !d.isExpired()) {
                 validatedDocuments.add(d.getDocument());
             }
         });
