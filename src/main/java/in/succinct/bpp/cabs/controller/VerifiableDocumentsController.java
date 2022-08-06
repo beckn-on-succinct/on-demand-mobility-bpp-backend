@@ -16,10 +16,8 @@ public class VerifiableDocumentsController<M extends VerifiableDocument & Model>
     @SingleRecordAction(icon = "fas fa-check", tooltip = "Mark Approved")
     public View approve(long id){
         M document = Database.getTable(getModelClass()).get(id);
-        document.setVerified(true);
         document.setTxnProperty("being.verified",true);
-        document.setRejected(false);
-        document.setTxnProperty("being.rejected",false);
+        document.setVerificationStatus(VerifiableDocument.APPROVED);
         document.save();
         return show(document);
     }
@@ -27,10 +25,8 @@ public class VerifiableDocumentsController<M extends VerifiableDocument & Model>
     @SingleRecordAction(icon = "fas fa-check", tooltip = "Mark Rejected")
     public View reject(long id){
         M document = Database.getTable(getModelClass()).get(id);
-        document.setVerified(true);
         document.setTxnProperty("being.verified",true);
-        document.setRejected(true);
-        document.setTxnProperty("being.rejected",true);
+        document.setVerificationStatus(VerifiableDocument.REJECTED);
         document.save();
         return show(document);
     }
