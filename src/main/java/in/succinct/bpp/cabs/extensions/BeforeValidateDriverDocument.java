@@ -10,6 +10,7 @@ import com.venky.swf.plugins.collab.db.model.user.Phone;
 import in.succinct.bpp.cabs.db.model.supply.AadharEKyc;
 import in.succinct.bpp.cabs.db.model.supply.AadharEKyc.AadharData;
 import in.succinct.bpp.cabs.db.model.supply.DriverDocument;
+import in.succinct.bpp.cabs.db.model.supply.VerifiableDocument;
 
 import java.sql.Date;
 
@@ -34,7 +35,7 @@ public class BeforeValidateDriverDocument extends BeforeValidateVerifiableDocume
         }
 
         if (userAddress.getDocument().equals(DriverDocument.AADHAR)){
-            if (!userAddress.isVerified() && userAddress.getFileContentSize() > 0){
+            if (!userAddress.getVerificationStatus().equals(VerifiableDocument.APPROVED) && userAddress.getFileContentSize() > 0){
                 try {
                     AadharData data = AadharEKyc.getInstance().parseZip(userAddress.getFile(),userAddress.getPassword());
                     if (data != null){
@@ -75,7 +76,7 @@ public class BeforeValidateDriverDocument extends BeforeValidateVerifiableDocume
                         if (pinCode != null) {
                             userAddress.setPinCodeId(pinCode.getId());
                         }
-                        userAddress.setVerified(true);
+                        userAddress.setVerificationStatus(VerifiableDocument.APPROVED);
                         userAddress.setTxnProperty("being.verified",true);
                         //userAddress.save();
                     }

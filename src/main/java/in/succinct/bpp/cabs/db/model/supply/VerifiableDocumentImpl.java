@@ -10,7 +10,6 @@ public class VerifiableDocumentImpl<M extends Model & VerifiableDocument> extend
         super(p);
     }
 
-
     public boolean isExpired(){
         M p = getProxy();
         if (p.getValidFrom() != null && p.getValidTo() != null){

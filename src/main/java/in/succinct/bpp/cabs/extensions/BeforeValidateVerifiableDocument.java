@@ -9,7 +9,7 @@ import in.succinct.bpp.cabs.db.model.supply.VerifiableDocument;
 public class BeforeValidateVerifiableDocument<M extends VerifiableDocument & Model> extends BeforeModelValidateExtension<M> {
     @Override
     public void beforeValidate(M document) {
-        if (!ObjectUtil.equals(true,document.getTxnProperty("being.verified")) && document.getRawRecord().isFieldDirty("VERIFIED") && document.isVerified()){
+        if (!ObjectUtil.equals(true,document.getTxnProperty("being.verified")) && document.getRawRecord().isFieldDirty("VERIFIED") && document.getVerificationStatus().equals(VerifiableDocument.APPROVED)){
              throw new AccessDeniedException();
         }
     }

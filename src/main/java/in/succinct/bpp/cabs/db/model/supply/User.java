@@ -35,7 +35,7 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     List<DriverDocument> getDriverDocuments();
 
     @IS_VIRTUAL
-    public boolean isVerified();
+    public boolean isApproved();
 
     @IS_VIRTUAL
     public Timestamp getDateOfJoining();

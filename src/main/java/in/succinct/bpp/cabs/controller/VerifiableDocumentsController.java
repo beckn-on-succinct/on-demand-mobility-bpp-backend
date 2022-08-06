@@ -13,11 +13,20 @@ public class VerifiableDocumentsController<M extends VerifiableDocument & Model>
         super(path);
     }
 
-    @SingleRecordAction(icon = "fas fa-check", tooltip = "Mark Verified")
-    public View verify(long id){
+    @SingleRecordAction(icon = "fas fa-check", tooltip = "Mark Approved")
+    public View approve(long id){
         M document = Database.getTable(getModelClass()).get(id);
-        document.setVerified(true);
         document.setTxnProperty("being.verified",true);
+        document.setVerificationStatus(VerifiableDocument.APPROVED);
+        document.save();
+        return show(document);
+    }
+
+    @SingleRecordAction(icon = "fas fa-check", tooltip = "Mark Rejected")
+    public View reject(long id){
+        M document = Database.getTable(getModelClass()).get(id);
+        document.setTxnProperty("being.verified",true);
+        document.setVerificationStatus(VerifiableDocument.REJECTED);
         document.save();
         return show(document);
     }

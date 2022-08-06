@@ -14,10 +14,10 @@ public class BeforeValidateAuthorizedDriver extends BeforeModelValidateExtension
         User user = model.getDriver();
         Vehicle vehicle = model.getVehicle();
         if (user != null && vehicle != null){
-            if (!user.isVerified()){
+            if (!user.isApproved()){
                 throw new RuntimeException("User is not verified yet");
             }
-            if (!vehicle.isVerified()){
+            if (!vehicle.isApproved()){
                 throw new RuntimeException("Vehicle is not verified yet");
             }
         }

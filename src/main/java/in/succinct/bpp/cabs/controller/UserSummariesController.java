@@ -50,7 +50,7 @@ public class UserSummariesController extends VirtualModelController<UserSummary>
         new Select().from(User.class).where(new Expression(getReflector().getPool(),"COMPANY_ID", Operator.IN,companyIds.toArray())).execute(User.class).forEach(u->{
             u.getUserRoles().forEach(ur->{
                 UserSummary summary = map.get(u.getCompanyId()).get(ur.getRoleId());
-                if (!u.isVerified()){
+                if (!u.isApproved()){
                     summary.getUnverifiedUserCount().increment();
                 }
                 summary.getUserCount().increment();

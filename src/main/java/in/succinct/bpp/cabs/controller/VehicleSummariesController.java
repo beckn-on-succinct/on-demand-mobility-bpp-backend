@@ -55,7 +55,7 @@ public class VehicleSummariesController extends VirtualModelController<VehicleSu
             VehicleSummary summary = map.get(c);
             for (Vehicle vehicle : select.execute(Vehicle.class)) {
                 summary.getVehicleCount().increment();
-                if (!vehicle.isVerified()){
+                if (!vehicle.isApproved()){
                     summary.getUnverifiedVehicleCount().increment();
                 }
             }
