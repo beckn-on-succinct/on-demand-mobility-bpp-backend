@@ -24,21 +24,14 @@ public interface VerifiableDocument  {
     @IS_VIRTUAL
     public boolean isExpired();
 
-    @IS_VIRTUAL
-    @PROTECTION(Kind.NON_EDITABLE)
+
+
     @Enumeration(APPROVED+","+REJECTED+","+PENDING)
+    @PROTECTION(Kind.NON_EDITABLE)
+    @COLUMN_DEF(value = StandardDefault.SOME_VALUE,args = PENDING)
     public String getVerificationStatus();
 
-
-    @PROTECTION(Kind.NON_EDITABLE)
-    @COLUMN_DEF(StandardDefault.BOOLEAN_FALSE)
-    public boolean isVerified();
-    public void setVerified(boolean verified);
-
-    @PROTECTION(Kind.NON_EDITABLE)
-    @COLUMN_DEF(StandardDefault.BOOLEAN_FALSE)
-    public boolean isRejected();
-    public void setRejected(boolean rejected);
+    public void setVerificationStatus(String status);
 
 
     public Date getValidFrom();
