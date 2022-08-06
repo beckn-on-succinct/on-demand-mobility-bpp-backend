@@ -17,11 +17,11 @@ public class VehicleImpl extends ModelImpl<Vehicle> {
         super(proxy);
     }
 
-    public boolean isVerified(){
+    public boolean isApproved(){
         Vehicle v = getProxy();
         Set<String> validatedDocuments = new HashSet<>();
         v.getDocuments().forEach(d->{
-            if (d.isVerified() && !d.isExpired()) {
+            if (d.getVerificationStatus().equals(VerifiableDocument.APPROVED) && !d.isExpired()) {
                 validatedDocuments.add(d.getDocument());
             }
         });
