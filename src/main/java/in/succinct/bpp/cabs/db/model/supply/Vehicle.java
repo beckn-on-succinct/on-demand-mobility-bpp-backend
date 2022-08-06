@@ -46,7 +46,7 @@ public interface Vehicle extends Model, Tagable {
     List<VehicleDocument> getDocuments();
 
     @IS_VIRTUAL
-    public boolean isVerified();
+    public boolean isApproved();
 
 
     List<AuthorizedDriver> getAuthorizedDrivers();
