@@ -10,19 +10,6 @@ public class VerifiableDocumentImpl<M extends Model & VerifiableDocument> extend
         super(p);
     }
 
-
-    public String getVerificationStatus(){
-        M p = getProxy();
-        if(!p.isVerified()){
-            return VerifiableDocument.PENDING;
-        }else if(!p.isRejected()){
-            return VerifiableDocument.APPROVED;
-        }else {
-            return VerifiableDocument.REJECTED;
-        }
-    }
-
-
     public boolean isExpired(){
         M p = getProxy();
         if (p.getValidFrom() != null && p.getValidTo() != null){
