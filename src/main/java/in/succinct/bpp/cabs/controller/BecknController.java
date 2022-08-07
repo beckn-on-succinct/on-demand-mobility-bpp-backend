@@ -51,6 +51,7 @@ import in.succinct.beckn.Providers;
 import in.succinct.beckn.Quote;
 import in.succinct.beckn.Request;
 import in.succinct.beckn.Tags;
+import in.succinct.beckn.Tracking;
 import in.succinct.beckn.Vehicle;
 import in.succinct.bpp.cabs.db.model.demand.Trip;
 import in.succinct.bpp.cabs.db.model.demand.TripStop;
@@ -296,7 +297,10 @@ public class BecknController extends Controller {
         return api();
     }
 
-
+    @RequireLogin(false)
+    public View track(){
+        return api();
+    }
 
 
     public void search(Request request,Request reply){
@@ -395,6 +399,16 @@ public class BecknController extends Controller {
         Order tripOrder = getBecknOrder(trip,reply);
         reply.setMessage(new Message());
         reply.getMessage().setOrder(tripOrder);
+    }
+    public void track(Request request,Request reply){
+        Message message = request.getMessage();
+        Trip trip = getTripFromOrderId(message.get("order_id"));
+
+        reply.setMessage(new Message());
+        Tracking tracking = new Tracking();
+        reply.getMessage().setTracking(tracking);
+        tracking.setStatus(ObjectUtil.equals(trip.getStatus(),Trip.Started)? "active" : "inactive");
+        tracking.setUrl(Config.instance().getServerBaseUrl()+"/trips/location/"+trip.getId());
     }
     public User ensurePassenger(in.succinct.beckn.User passenger){
         Select select = new Select().from(User.class);
