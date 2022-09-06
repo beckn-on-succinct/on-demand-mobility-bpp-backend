@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.venky.core.util.ObjectUtil;
 import com.venky.swf.db.table.ModelImpl;
 import com.venky.swf.sql.Select;
 
@@ -38,7 +39,7 @@ public class UserImpl extends ModelImpl<User> {
             return null; //Logged off!!
         }
 
-        Optional<Trip> optionalTrip = last.getTrips().stream().filter(t->t.getStartTs() != null).findFirst();
+        Optional<Trip> optionalTrip = last.getTrips().stream().filter(t->t.getStartTs() != null ).findFirst();
 
         if (optionalTrip.isPresent()){
             Trip lastTrip = optionalTrip.get();
@@ -47,10 +48,10 @@ public class UserImpl extends ModelImpl<User> {
                 //Not Ended.
                 List<TripStop> stops =  lastTrip.getTripStops();
                 if (!stops.isEmpty()) {
-                    long lstarted = lastTrip.getStartTs().getTime();
+                    long lstarted = lastTrip.getStartTs() == null ? (lastTrip.getScheduledStart() == null ? availableAt : lastTrip.getScheduledStart().getTime()) : lastTrip.getStartTs().getTime();
                     long lended = lstarted;
                     for (TripStop stop : stops){
-                        lended += (stop.getMinutesFromLastStop() > 0? stop.getMinutesFromLastStop() : stop.getEstimatedMinutesFromLastStop());
+                        lended += (stop.getMinutesFromLastStop() > 0? stop.getMinutesFromLastStop() : stop.getEstimatedMinutesFromLastStop())*60L*1000L;
                     }
                     availableAt = Math.max(availableAt,lended);
                 }
@@ -63,7 +64,7 @@ public class UserImpl extends ModelImpl<User> {
 
     public boolean isAvailable() {
         Timestamp availableAt = getAvailableAt();
-        return availableAt != null && availableAt.getTime() < System.currentTimeMillis() + 10 * 60 * 60 * 1000L ;
+        return availableAt != null && availableAt.getTime() < System.currentTimeMillis() + 10 * 60 * 1000L ; // 10 minutes
     }
 
     public boolean isApproved(){

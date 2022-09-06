@@ -9,6 +9,8 @@ import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.db.table.ModelImpl;
+import com.venky.swf.plugins.background.core.Task;
+import com.venky.swf.plugins.background.core.TaskManager;
 import com.venky.swf.plugins.collab.util.BoundingBox;
 import com.venky.swf.sql.Conjunction;
 import com.venky.swf.sql.Expression;
@@ -59,7 +61,8 @@ public class TripImpl extends ModelImpl<Trip> {
         select.add(" and exists (select " +
                 "1 from authorized_drivers a,  vehicles v , vehicle_deployment_purposes dp where a.id = driver_logins.authorized_driver_id " +
                 " and v.id = a.vehicle_id and dp.vehicle_id = v.id and v.tags like '" +tagQuery +"'" +
-                ( purpose != null? String.format(" and dp.deployment_purpose_id = %d " , purpose.getId()) : "" ) + ")");
+                ( purpose != null? String.format(" and dp.deployment_purpose_id = %d " , purpose.getId()) : "" ) +
+                 String.format(") and not exists (select 1 from rejected_trips where driver_login_id = driver_logins.id and trip_id = %d)",start.getTripId()));
 
 
         List<DriverLogin> logins = select.execute();
@@ -189,7 +192,7 @@ public class TripImpl extends ModelImpl<Trip> {
         SortedSet<Long> purposeSet = new TreeSet<>(new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
-                return Double.compare(totalSellingPrice.get(o1).doubleValue(),totalPrice.get(o2).doubleValue());
+                return Double.compare(totalSellingPrice.get(o1).doubleValue(),totalSellingPrice.get(o2).doubleValue());
             }
         });
         purposeSet.addAll(totalSellingPrice.keySet());
@@ -223,12 +226,17 @@ public class TripImpl extends ModelImpl<Trip> {
         if (driverLogin == null || driverLogin.getLoggedOffAt() != null ){
             throw new UnsupportedOperationException("Cannot start trip unless driver is assigned and is logged in");
         }
-        if (ObjectUtil.equals(t.getStatus(),Trip.NotStarted)){
+        if (!ObjectUtil.equals(t.getDriverAcceptanceStatus(),Trip.Accepted)){
+            t.accept();
+        }
+
+        if (ObjectUtil.equals(t.getDriverAcceptanceStatus(),Trip.Accepted)){
             t.setStatus(Trip.Started);
             t.setStartTs(new Timestamp(System.currentTimeMillis()));
             t.save();
             t.getDriverLogin().updateLocation(new GeoCoordinate(t.getTripStops().get(0)));
         }
+
     }
     public void end(){
         Trip t = getProxy();
@@ -246,4 +254,22 @@ public class TripImpl extends ModelImpl<Trip> {
             t.getDriverLogin().updateLocation(new GeoCoordinate(stops.get(stops.size()-1)));
         }
     }
+
+    public void cancel(){
+        Trip trip = getProxy();
+        trip.setStatus(Trip.Canceled);
+        trip.save();
+    }
+
+    public void accept(){
+        Trip trip = getProxy();
+        trip.setDriverAcceptanceStatus(Trip.Accepted);
+        trip.save();
+    }
+    public void reject(){
+        Trip trip = getProxy();
+        trip.setDriverAcceptanceStatus(Trip.Rejected);
+        trip.save();
+    }
+
 }

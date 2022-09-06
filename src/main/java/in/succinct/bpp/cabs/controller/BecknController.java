@@ -502,8 +502,7 @@ public class BecknController extends Controller {
         Message message = request.getMessage();
         Trip trip = getTripFromOrderId(message.get("order_id"));
         if (trip!= null){
-            trip.setStatus(Trip.Canceled);
-            trip.save();
+            trip.cancel();
         }
         Order tripOrder = getBecknOrder(trip,reply);
         reply.setMessage(new Message());

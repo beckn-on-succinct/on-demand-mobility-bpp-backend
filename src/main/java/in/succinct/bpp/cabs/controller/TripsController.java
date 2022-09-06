@@ -16,6 +16,7 @@ public class TripsController extends ModelController<Trip> {
     public TripsController(Path path) {
         super(path);
     }
+
     @RequireLogin(value = false)// Not sure of auth here.
     public View location(long id){
         Trip trip  = Database.getTable(Trip.class).get(id);
@@ -23,4 +24,35 @@ public class TripsController extends ModelController<Trip> {
         location.put("gps",String.format("%f,%f",trip.getLat(),trip.getLng()));
         return new BytesView(getPath(),location.toString().getBytes(StandardCharsets.UTF_8), MimeType.APPLICATION_JSON);
     }
+
+    public View start(long id){
+        Trip trip = Database.getTable(Trip.class).get(id);
+        trip.start();
+        return show(trip);
+    }
+    public View end(long id){
+        Trip trip = Database.getTable(Trip.class).get(id);
+        trip.end();
+        return show(trip);
+    }
+
+    public View accept(long id){
+        Trip trip = Database.getTable(Trip.class).get(id);
+        trip.accept();
+        return show(trip);
+
+    }
+    public View reject(long id){
+        Trip trip = Database.getTable(Trip.class).get(id);
+        trip.reject();
+        return show(trip);
+    }
+
+    public View cancel(long id){
+        Trip trip = Database.getTable(Trip.class).get(id);
+        trip.cancel();
+        return show(trip);
+    }
+
+
 }
