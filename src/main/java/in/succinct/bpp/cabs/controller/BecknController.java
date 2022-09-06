@@ -78,6 +78,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BecknController extends Controller {
+
+    private static final String BECKN_UPDATE_ERROR_MSG="Update not supported here, please Cancel and Select";
     public BecknController(Path path) {
         super(path);
     }
@@ -302,6 +304,11 @@ public class BecknController extends Controller {
         return api();
     }
 
+    @RequireLogin(false)
+    public View update(){
+        return api();
+    }
+
 
     public void search(Request request,Request reply){
 
@@ -506,6 +513,15 @@ public class BecknController extends Controller {
         }
         Order tripOrder = getBecknOrder(trip,reply);
         reply.setMessage(new Message());
+        reply.getMessage().setOrder(tripOrder);
+    }
+
+    public void update(Request request,Request reply){
+        Message message = request.getMessage();
+        Trip trip = getTripFromOrderId(message.get("order_id"));
+        Order tripOrder = getBecknOrder(trip,reply);
+        reply.setMessage(new Message());
+        reply.getError().setMessage(BECKN_UPDATE_ERROR_MSG);
         reply.getMessage().setOrder(tripOrder);
     }
 
