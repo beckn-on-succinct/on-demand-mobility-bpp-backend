@@ -22,10 +22,10 @@ public interface DriverDocument extends Model,VerifiableDocument, Address {
     public static final String AADHAR = "Aadhar";
     public static final String PAN = "Pan";
     public static final String LICENSE = "Licence";
-    static final String[] DOCUMENTS_NEEDED = new String[]{LICENSE,PAN};
+    static final String[] DOCUMENTS_NEEDED = new String[]{LICENSE,PAN,AADHAR};
 
 
-    @Enumeration(LICENSE+","+PAN)
+    @Enumeration(LICENSE+","+PAN+","+AADHAR)
     public String getDocument();
     public void setDocument(String documentType);
 
