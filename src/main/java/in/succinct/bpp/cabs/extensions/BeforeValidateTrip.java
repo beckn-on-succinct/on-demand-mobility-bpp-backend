@@ -25,6 +25,7 @@ public class BeforeValidateTrip extends BeforeModelValidateExtension<Trip> {
                     rejectedTrip.setDriverLoginId(model.getDriverLoginId());
                     rejectedTrip.save();
                 }
+                model.setDriverLoginId(null);
                 TaskManager.instance().executeAsync((Task)()-> model.allocate(),false);
             }else if (ObjectUtil.equals(model.getDriverAcceptanceStatus(),Trip.Accepted)){
                 for (Trip t : model.getDriverLogin().getTrips()) {
