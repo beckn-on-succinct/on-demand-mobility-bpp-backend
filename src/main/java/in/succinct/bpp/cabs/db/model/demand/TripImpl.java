@@ -156,7 +156,7 @@ public class TripImpl extends ModelImpl<Trip> {
             end = ts;
         }
         trip.setDriverLoginId(null);
-
+        trip.setDriverAcceptanceStatus(null);
         SortedSet<String> tags = new TreeSet<>();
 
         StringTokenizer tok = new StringTokenizer(StringUtil.valueOf(trip.getVehicleTags()),",");
