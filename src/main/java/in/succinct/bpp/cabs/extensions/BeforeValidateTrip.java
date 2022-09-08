@@ -29,7 +29,7 @@ public class BeforeValidateTrip extends BeforeModelValidateExtension<Trip> {
                 TaskManager.instance().executeAsync((Task)()-> model.allocate(),false);
             }else if (ObjectUtil.equals(model.getDriverAcceptanceStatus(),Trip.Accepted)){
                 for (Trip t : model.getDriverLogin().getTrips()) {
-                    if (t.getStartTs() == null && t.getId() != model.getId() && ObjectUtil.equals(t.getStatus(), Trip.Confirmed)) {
+                    if (t.getStartTs() == null && t.getId() != model.getId() && ObjectUtil.equals(t.getStatus(), Trip.Confirmed) && !ObjectUtil.equals(t.getDriverAcceptanceStatus(),Trip.Accepted)) {
                         TaskManager.instance().executeAsync((Task) () -> t.reject(), false);
                     }
                 }
