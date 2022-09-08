@@ -26,7 +26,7 @@ public class AfterSaveUserLogin extends AfterModelSaveExtension<UserLogin> {
                 add(new Expression(select.getPool(),"LOGGED_IN_AT", Operator.NE)).
                 add(new Expression(select.getPool(), "LOGGED_OFF_AT",Operator.EQ))).orderBy("LOGGED_IN_AT DESC").execute(1);
 
-        if (!logins.isEmpty()){
+        if (!logins.isEmpty() && !model.getReflector().isVoid(model.getLat()) && !model.getReflector().isVoid(model.getLng()) ){
             DriverLogin driverLogin = logins.get(0);
             driverLogin.setLat(model.getLat());
             driverLogin.setLng(model.getLng());
