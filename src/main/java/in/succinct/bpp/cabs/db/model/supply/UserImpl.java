@@ -40,12 +40,10 @@ public class UserImpl extends ModelImpl<User> {
         if (last.getLoggedOffAt() != null){
             return null; //Logged off!!
         }
+        Trip lastTrip = last.getLastTrip();
 
-        Optional<Trip> optionalTrip = last.getTrips().stream().filter(t->t.getStartTs() != null ).findFirst();
 
-        if (optionalTrip.isPresent()){
-            Trip lastTrip = optionalTrip.get();
-
+        if (lastTrip != null){
             if (lastTrip.getEndTs() == null){
                 //Not Ended.
                 List<TripStop> stops =  lastTrip.getTripStops();
@@ -64,11 +62,6 @@ public class UserImpl extends ModelImpl<User> {
             }
         }
         return new Timestamp(availableAt);
-    }
-
-    public boolean isAvailable() {
-        Timestamp availableAt = getAvailableAt();
-        return availableAt != null && availableAt.getTime() < System.currentTimeMillis() + 10 * 60 * 1000L ; // 10 minutes
     }
 
     public boolean isApproved(){

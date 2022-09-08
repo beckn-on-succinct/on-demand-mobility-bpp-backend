@@ -2,6 +2,7 @@ package in.succinct.bpp.cabs.db.model.supply;
 
 import com.venky.geo.GeoLocation;
 import com.venky.swf.db.annotations.column.COLUMN_DEF;
+import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.defaulting.StandardDefault;
 import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
 import com.venky.swf.db.model.Model;
@@ -38,4 +39,7 @@ public interface DriverLogin extends Model , GeoLocation {
 
     public void updateLocation(GeoLocation location);
     public boolean isDriver(User user);
+
+    @IS_VIRTUAL
+    public Trip getLastTrip();
 }

@@ -146,4 +146,7 @@ public interface Trip extends Model, GeoLocation {
     public void cancel();
     public void accept();
     public void reject();
+
+    @IS_VIRTUAL
+    public TripStop getLastStop();
 }

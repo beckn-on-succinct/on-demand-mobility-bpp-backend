@@ -22,7 +22,8 @@ import java.util.SortedSet;
 @MENU("Inventory")
 @HAS_DESCRIPTION_FIELD("VEHICLE_NUMBER")
 public interface Vehicle extends Model, Tagable {
-
+    public static final  double AVERAGE_SPEED_PER_HOUR = 40 ; //km/hr
+    public static final  double AVERAGE_SPEED_PER_MINUTE = AVERAGE_SPEED_PER_HOUR / 60.0 ; //km/hr
 
     @UNIQUE_KEY
     @PARTICIPANT

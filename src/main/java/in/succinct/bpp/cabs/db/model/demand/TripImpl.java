@@ -1,10 +1,13 @@
 package in.succinct.bpp.cabs.db.model.demand;
 
 import com.venky.cache.Cache;
+import com.venky.core.date.DateUtils;
 import com.venky.core.string.StringUtil;
 import com.venky.core.util.Bucket;
+import com.venky.core.util.ObjectHolder;
 import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoordinate;
+import com.venky.geo.GeoDistance;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.model.reflection.ModelReflector;
@@ -12,6 +15,7 @@ import com.venky.swf.db.table.ModelImpl;
 import com.venky.swf.plugins.background.core.Task;
 import com.venky.swf.plugins.background.core.TaskManager;
 import com.venky.swf.plugins.collab.util.BoundingBox;
+import com.venky.swf.routing.Config;
 import com.venky.swf.sql.Conjunction;
 import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
@@ -19,7 +23,9 @@ import com.venky.swf.sql.Select;
 import in.succinct.bpp.cabs.db.model.pricing.TariffCard;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
+import in.succinct.bpp.cabs.db.model.supply.User;
 import in.succinct.bpp.cabs.db.model.supply.Vehicle;
+import org.bouncycastle.util.Times;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -67,9 +73,24 @@ public class TripImpl extends ModelImpl<Trip> {
 
         List<DriverLogin> logins = select.execute();
 
-        List<DriverLogin> filtered = logins.stream().filter(l -> l.getAuthorizedDriver().getDriver().isAvailable() && l.getAuthorizedDriver().getVehicle().getTagSet().containsAll(tagSet)).sorted((o1, o2) -> {
-            double d1 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o1));
-            double d2 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o2));
+        List<DriverLogin> filtered = logins.stream().filter(l -> {
+            User driver = l.getAuthorizedDriver().getDriver();
+            Timestamp availableAt = driver.getAvailableAt();
+            if (availableAt != null) {
+                List<TripStop> stops = l.getLastTrip().getTripStops();
+                TripStop lastStop = stops.get(stops.size()-1);
+                double distanceToStartLocation = GeoDistance.getDrivingDistanceKms(start.getLat(),start.getLng(), lastStop.getLat(),lastStop.getLng(), Config.instance().getGeoProviderParams());
+                double minutesToStartLocation = distanceToStartLocation/Vehicle.AVERAGE_SPEED_PER_MINUTE;
+                availableAt = new Timestamp(DateUtils.addMinutes(availableAt.getTime(),(int)(Math.ceil(minutesToStartLocation + 1))));
+                return availableAt.getTime() < start.getTrip().getScheduledStart().getTime() + 10 * 60L * 1000L && l.getAuthorizedDriver().getVehicle().getTagSet().containsAll(tagSet);
+
+            }else {
+                return false;
+            }
+        }).sorted((o1, o2) -> {
+
+            double d1 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o1.getLastTrip().getLastStop()));
+            double d2 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o2.getLastTrip().getLastStop()));
             int ret = (int) (d1 - d2);
             if (ret == 0) {
                 ret = (int) (o1.getId() - o2.getId());
@@ -80,16 +101,17 @@ public class TripImpl extends ModelImpl<Trip> {
         return filtered;
 
     }
-    TripStop last = null;
+    ObjectHolder<TripStop> last = null;
     public TripStop getLastStop(){
         Trip trip = getProxy();
-        List<TripStop> stops =trip.getTripStops();
-        if (!stops.isEmpty()){
-            last =  stops.get(stops.size()-1);
-        }else {
-            last = null;
+        if (last == null){
+            last = new ObjectHolder<>(null);
+            List<TripStop> stops =trip.getTripStops();
+            if (!stops.isEmpty()){
+                last.set(stops.get(stops.size()-1));
+            }
         }
-        return last;
+        return last.get();
     }
 
     public BigDecimal getLat(){

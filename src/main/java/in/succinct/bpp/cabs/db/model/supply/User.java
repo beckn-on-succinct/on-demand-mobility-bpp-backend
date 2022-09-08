@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 
 public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     @IS_VIRTUAL
-    public boolean isAvailable();
+    public Timestamp getAvailableAt();
 
     public Date getDateOfBirth();
     public void setDateOfBirth(Date dateOfBirth);
