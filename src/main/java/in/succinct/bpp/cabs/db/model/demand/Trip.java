@@ -46,7 +46,7 @@ public interface Trip extends Model, GeoLocation {
 
     @COLUMN_DEF(StandardDefault.NULL)
     @IS_NULLABLE
-    @Enumeration("," + Accepted + "," + Rejected)
+    @Enumeration(" ," + Accepted + "," + Rejected)
     @Index
     public String getDriverAcceptanceStatus();
     public void setDriverAcceptanceStatus(String driverAcceptanceStatus);
