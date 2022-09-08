@@ -7,6 +7,7 @@ import com.venky.swf.db.annotations.column.IS_NULLABLE;
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.defaulting.StandardDefault;
 import com.venky.swf.db.annotations.column.indexing.Index;
+import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
 import com.venky.swf.db.annotations.column.ui.PROTECTION;
 import com.venky.swf.db.annotations.column.ui.PROTECTION.Kind;
 import com.venky.swf.db.annotations.column.validations.Enumeration;
@@ -91,6 +92,7 @@ public interface Trip extends Model, GeoLocation {
     public Route getRoute();
 
     @Index
+    @PARTICIPANT
     public Long getDriverLoginId();
     public void setDriverLoginId(Long id);
     public DriverLogin getDriverLogin();

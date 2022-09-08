@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.venky.core.util.ObjectUtil;
+import com.venky.swf.db.JdbcTypeHelper.IntegerConverter;
+import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.table.ModelImpl;
 import com.venky.swf.sql.Select;
 
@@ -50,8 +52,10 @@ public class UserImpl extends ModelImpl<User> {
                 if (!stops.isEmpty()) {
                     long lstarted = lastTrip.getStartTs() == null ? (lastTrip.getScheduledStart() == null ? availableAt : lastTrip.getScheduledStart().getTime()) : lastTrip.getStartTs().getTime();
                     long lended = lstarted;
+                    TypeConverter<Integer> converter = getReflector().getJdbcTypeHelper().getTypeRef(Integer.class).getTypeConverter();
+
                     for (TripStop stop : stops){
-                        lended += (stop.getMinutesFromLastStop() > 0? stop.getMinutesFromLastStop() : stop.getEstimatedMinutesFromLastStop())*60L*1000L;
+                        lended += (converter.valueOf(stop.getMinutesFromLastStop()) > 0? stop.getMinutesFromLastStop() : stop.getEstimatedMinutesFromLastStop())*60L*1000L;
                     }
                     availableAt = Math.max(availableAt,lended);
                 }

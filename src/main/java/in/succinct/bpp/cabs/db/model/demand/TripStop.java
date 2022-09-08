@@ -2,12 +2,14 @@ package in.succinct.bpp.cabs.db.model.demand;
 
 import com.venky.swf.db.annotations.column.IS_NULLABLE;
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
+import com.venky.swf.db.annotations.column.pm.PARTICIPANT;
 import com.venky.swf.db.annotations.model.ORDER_BY;
 import in.succinct.bpp.cabs.db.model.routes.RouteStop;
 
 @IS_VIRTUAL(false)
 @ORDER_BY("TRIP_ID,SEQUENCE_NUMBER")
 public interface TripStop extends RouteStop {
+    @PARTICIPANT
     public Long getTripId();
     public void setTripId(Long id);
     public Trip getTrip();
