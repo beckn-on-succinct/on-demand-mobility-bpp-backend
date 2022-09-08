@@ -77,13 +77,14 @@ public class TripImpl extends ModelImpl<Trip> {
             User driver = l.getAuthorizedDriver().getDriver();
             Timestamp availableAt = driver.getAvailableAt();
             if (availableAt != null) {
-                List<TripStop> stops = l.getLastTrip().getTripStops();
-                TripStop lastStop = stops.get(stops.size()-1);
-                double distanceToStartLocation = GeoDistance.getDrivingDistanceKms(start.getLat(),start.getLng(), lastStop.getLat(),lastStop.getLng(), Config.instance().getGeoProviderParams());
-                double minutesToStartLocation = distanceToStartLocation/Vehicle.AVERAGE_SPEED_PER_MINUTE;
-                availableAt = new Timestamp(DateUtils.addMinutes(availableAt.getTime(),(int)(Math.ceil(minutesToStartLocation + 1))));
+                Trip lastTrip = l.getLastTrip();
+                if (lastTrip != null) {
+                    TripStop lastStop = lastTrip.getLastStop();
+                    double distanceToStartLocation = GeoDistance.getDrivingDistanceKms(start.getLat(), start.getLng(), lastStop.getLat(), lastStop.getLng(), Config.instance().getGeoProviderParams());
+                    double minutesToStartLocation = distanceToStartLocation / Vehicle.AVERAGE_SPEED_PER_MINUTE;
+                    availableAt = new Timestamp(DateUtils.addMinutes(availableAt.getTime(), (int) (Math.ceil(minutesToStartLocation + 1))));
+                }
                 return availableAt.getTime() < start.getTrip().getScheduledStart().getTime() + 10 * 60L * 1000L && l.getAuthorizedDriver().getVehicle().getTagSet().containsAll(tagSet);
-
             }else {
                 return false;
             }
