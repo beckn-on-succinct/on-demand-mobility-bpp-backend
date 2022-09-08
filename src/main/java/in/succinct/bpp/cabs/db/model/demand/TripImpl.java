@@ -132,7 +132,7 @@ public class TripImpl extends ModelImpl<Trip> {
             }
             end = ts;
         }
-
+        trip.setDriverLoginId(null);
 
         SortedSet<String> tags = new TreeSet<>();
 

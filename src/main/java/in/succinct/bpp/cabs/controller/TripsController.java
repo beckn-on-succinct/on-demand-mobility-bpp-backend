@@ -25,6 +25,12 @@ public class TripsController extends ModelController<Trip> {
         return new BytesView(getPath(),location.toString().getBytes(StandardCharsets.UTF_8), MimeType.APPLICATION_JSON);
     }
 
+    public View allocate(long id){
+        Trip trip = Database.getTable(Trip.class).get(id);
+        trip.allocate();
+        return show(trip);
+    }
+
     public View start(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.start();
