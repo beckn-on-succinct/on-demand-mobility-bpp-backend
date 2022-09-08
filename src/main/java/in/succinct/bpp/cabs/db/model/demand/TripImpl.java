@@ -89,8 +89,8 @@ public class TripImpl extends ModelImpl<Trip> {
             }
         }).sorted((o1, o2) -> {
 
-            double d1 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o1.getLastTrip().getLastStop()));
-            double d2 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o2.getLastTrip().getLastStop()));
+            double d1 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o1.getLastTrip() == null ? o1 : o1.getLastTrip().getLastStop()));
+            double d2 = new GeoCoordinate(start).distanceTo(new GeoCoordinate(o2.getLastTrip() == null ? o2 : o2.getLastTrip().getLastStop()));
             int ret = (int) (d1 - d2);
             if (ret == 0) {
                 ret = (int) (o1.getId() - o2.getId());
