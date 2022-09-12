@@ -41,6 +41,9 @@ public interface Trip extends Model, GeoLocation {
         }
     }};
 
+    @IS_VIRTUAL
+    public String getDisplayStatus();
+
 
     public static  final String Rejected = "Rejected";
     public static  final String Accepted = "Accepted";
@@ -149,4 +152,8 @@ public interface Trip extends Model, GeoLocation {
 
     @IS_VIRTUAL
     public TripStop getLastStop();
+
+    @IS_VIRTUAL
+    public TripStop getFirstStop();
+
 }

@@ -114,7 +114,18 @@ public class TripImpl extends ModelImpl<Trip> {
         }
         return last.get();
     }
-
+    ObjectHolder<TripStop> first = null;
+    public TripStop getFirstStop(){
+        Trip trip = getProxy();
+        if (first == null){
+            first = new ObjectHolder<>(null);
+            List<TripStop> stops =trip.getTripStops();
+            if (!stops.isEmpty()){
+                first.set(stops.get(0));
+            }
+        }
+        return first.get();
+    }
     public BigDecimal getLat(){
         Trip trip = getProxy();
 
@@ -295,4 +306,28 @@ public class TripImpl extends ModelImpl<Trip> {
         trip.save();
     }
 
+    public String getDisplayStatus(){
+        StringBuilder status = new StringBuilder();
+        Trip trip = getProxy();
+        if (ObjectUtil.equals(trip.getStatus(),Trip.Confirmed)){
+            if (!ObjectUtil.equals(trip.getDriverAcceptanceStatus(),Trip.Accepted)){
+                status.append("Awaiting Driver acceptance");
+            }else {
+                TripStop first = getFirstStop();
+                if (first != null && first.getLat() != null && trip.getLat() != null ){
+                    if (new GeoCoordinate(first).distanceTo(new GeoCoordinate(trip)) < 0.4){
+                        status.append("Reached");
+                    }else {
+                        status.append("Reaching");
+                    }
+                    status.append(" Pickup location");
+                }
+            }
+        }
+
+        if (status.length() == 0){
+            status.append(trip.getStatus());
+        }
+        return status.toString();
+    }
 }
