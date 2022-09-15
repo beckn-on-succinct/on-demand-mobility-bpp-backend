@@ -22,7 +22,7 @@ public interface DriverDocument extends Model,VerifiableDocument, Address {
     public static final String AADHAR = "Aadhar";
     public static final String PAN = "Pan";
     public static final String LICENSE = "Licence";
-    static final String[] DOCUMENTS_NEEDED = new String[]{LICENSE,PAN,AADHAR};
+    static final String[] DOCUMENTS_NEEDED = new String[]{LICENSE,PAN};
 
 
     @Enumeration(LICENSE+","+PAN+","+AADHAR)
