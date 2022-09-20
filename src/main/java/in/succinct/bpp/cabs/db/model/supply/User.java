@@ -26,6 +26,7 @@ public interface User extends com.venky.swf.plugins.collab.db.model.user.User {
     List<Vehicle> getOnboardedVehicles();
 
 
+    @CONNECTED_VIA("DRIVER_ID")
     List<AuthorizedDriver> getAuthorizedVehicles();
 
     @IS_VIRTUAL
