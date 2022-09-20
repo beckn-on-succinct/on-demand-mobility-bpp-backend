@@ -92,7 +92,7 @@ public class TripsController extends ModelController<Trip> {
         where.add(daWhere);
 
         Select select = new Select().from(Trip.class).where(where);
-        select.add(" and not exists ( select 1 from rejected_trips where driver_login_id = driver_logins.id and trip_id = trips.id ) ");
+        select.add(" and not exists ( select 1 from rejected_trips where driver_login_id = trips.driver_login_id and trip_id = trips.id ) ");
 
         List<Trip> trips = select.execute();
         if (trips.isEmpty()){
