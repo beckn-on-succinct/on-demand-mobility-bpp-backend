@@ -94,6 +94,11 @@ public interface Trip extends Model, GeoLocation {
     public void setRouteId(Long id);
     public Route getRoute();
 
+    @IS_VIRTUAL
+    public Long getDriverId();
+    public void setDriverId(Long id);
+    public User getDriver();
+
     @Index
     @PARTICIPANT
     public Long getDriverLoginId();

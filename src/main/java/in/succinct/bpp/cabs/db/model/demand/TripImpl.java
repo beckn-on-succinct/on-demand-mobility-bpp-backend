@@ -44,6 +44,30 @@ public class TripImpl extends ModelImpl<Trip> {
         super(trip);
     }
 
+    public Long getDriverId() {
+        User user = getDriver();
+        if (user != null){
+            return user.getId();
+        }
+        return null;
+    }
+    public void setDriverId(Long id){
+        //
+    }
+    private User driver = null;
+    public User getDriver(){
+        if (driver != null){
+            return driver;
+        }
+        DriverLogin driverLogin = getProxy().getDriverLogin();
+
+        if (driverLogin == null){
+            return null;
+        }
+
+        driver = driverLogin.getAuthorizedDriver().getDriver();
+        return driver;
+    }
 
     private List<DriverLogin> getAvailableVehicles(TripStop start, DeploymentPurpose purpose, SortedSet<String> tagSet) {
         ModelReflector<DriverLogin> ref = ModelReflector.instance(DriverLogin.class);
