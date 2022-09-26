@@ -6,14 +6,18 @@ import com.venky.core.string.StringUtil;
 import com.venky.core.util.Bucket;
 import com.venky.core.util.ObjectHolder;
 import com.venky.core.util.ObjectUtil;
+import com.venky.geo.GeoCoder;
+import com.venky.geo.GeoCoder.GeoAddress;
 import com.venky.geo.GeoCoordinate;
 import com.venky.geo.GeoDistance;
+import com.venky.geo.GeoLocation;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.db.table.ModelImpl;
 import com.venky.swf.plugins.background.core.Task;
 import com.venky.swf.plugins.background.core.TaskManager;
+import com.venky.swf.plugins.collab.db.model.config.City;
 import com.venky.swf.plugins.collab.util.BoundingBox;
 import com.venky.swf.routing.Config;
 import com.venky.swf.sql.Conjunction;
@@ -21,15 +25,20 @@ import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
 import in.succinct.bpp.cabs.db.model.pricing.TariffCard;
+import in.succinct.bpp.cabs.db.model.service.GeoFencePolicy;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
 import in.succinct.bpp.cabs.db.model.supply.Vehicle;
 import org.bouncycastle.util.Times;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +106,16 @@ public class TripImpl extends ModelImpl<Trip> {
 
         List<DriverLogin> logins = select.execute();
 
+
         List<DriverLogin> filtered = logins.stream().filter(l -> {
+            TripStop fs = getFirstStop();
+            TripStop ls = getLastStop();
+            if (!geoFencePolicyOk(getCityCode(l),getCityCode(fs),getCityCode(ls))){
+                return false;
+            }
+
+
+
             User driver = l.getAuthorizedDriver().getDriver();
             Timestamp availableAt = driver.getAvailableAt();
             if (availableAt != null) {
@@ -126,6 +144,60 @@ public class TripImpl extends ModelImpl<Trip> {
         return filtered;
 
     }
+
+    private boolean geoFencePolicyOk(String driverCity, String startCity, String endCity) {
+        if (Database.getTable(GeoFencePolicy.class).recordCount() == 0){
+            return true;
+        }
+        Expression where = new Expression(getReflector().getPool(),Conjunction.AND);
+        {
+            Expression cityWhere = new Expression(getPool(), Conjunction.OR);
+            where.add(cityWhere);
+            cityWhere.add(new Expression(getPool(), "DRIVER_CITY", Operator.EQ, driverCity));
+            cityWhere.add(new Expression(getPool(), "DRIVER_CITY", Operator.EQ));
+        }
+        {
+            Expression cityWhere = new Expression(getPool(), Conjunction.OR);
+            where.add(cityWhere);
+            cityWhere.add(new Expression(getPool(), "START_CITY", Operator.EQ, startCity));
+            cityWhere.add(new Expression(getPool(), "START_CITY", Operator.EQ));
+        }
+        {
+            Expression cityWhere = new Expression(getPool(), Conjunction.OR);
+            where.add(cityWhere);
+            cityWhere.add(new Expression(getPool(), "END_CITY", Operator.EQ, endCity));
+            cityWhere.add(new Expression(getPool(), "END_CITY", Operator.EQ));
+        }
+        List<GeoFencePolicy> policies = new Select().from(GeoFencePolicy.class).where(where).execute(1);
+        return !policies.isEmpty();
+    }
+
+    private String getCityCode(DriverLogin l) {
+        GeoAddress address = getGeoCoder().getAddress(l,getGeoProviderParams());
+        return City.findByCountryAndStateAndName(address.getCountry(),address.getState(),address.getCity()).getCode();
+    }
+    private String getCityCode(TripStop ts){
+        if (ts.getCityId() != null){
+            return ts.getCity().getCode();
+        }
+        GeoAddress address = getGeoCoder().getAddress(ts,getGeoProviderParams());
+        City city = City.findByCountryAndStateAndName(address.getCountry(),address.getState(),address.getCity());
+        ts.setCityId(city.getId());
+        return city.getCode();
+    }
+
+    private static Map<String,String> geoProviderParams = new HashMap<String,String>(){{
+        String provider = Config.instance().getProperty("bpp.cabs.geo.provider","here");
+        put(provider+".app_key", Config.instance().getProperty("geocoder."+provider+".app_key"));
+    }};
+    private Map<String,String> getGeoProviderParams(){
+        return geoProviderParams;
+    }
+    private static GeoCoder  geoCoder = new GeoCoder(Config.instance().getProperty("bpp.cabs.geo.provider","here"));
+    private GeoCoder getGeoCoder(){
+        return geoCoder;
+    }
+
     ObjectHolder<TripStop> last = null;
     public TripStop getLastStop(){
         Trip trip = getProxy();
