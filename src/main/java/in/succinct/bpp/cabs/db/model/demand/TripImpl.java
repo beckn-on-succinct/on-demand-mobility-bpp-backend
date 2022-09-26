@@ -80,7 +80,7 @@ public class TripImpl extends ModelImpl<Trip> {
             tagQuery.append("%");
         }
 
-        Expression expression = new BoundingBox(new GeoCoordinate(start),1,20).
+        Expression expression = new BoundingBox(new GeoCoordinate(start),1,Config.instance().getIntProperty("bpp.cabs.search.radius",500)).
                 getWhereClause(DriverLogin.class).
                 add(loggedInDriver);
 
