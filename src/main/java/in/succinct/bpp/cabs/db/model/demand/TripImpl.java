@@ -107,13 +107,14 @@ public class TripImpl extends ModelImpl<Trip> {
         List<DriverLogin> logins = select.execute();
 
 
+        boolean checkGeoFence = Database.getTable(GeoFencePolicy.class).recordCount() > 0;
         List<DriverLogin> filtered = logins.stream().filter(l -> {
             TripStop fs = getFirstStop();
             TripStop ls = getLastStop();
-            if (!geoFencePolicyOk(getCityCode(l),getCityCode(fs),getCityCode(ls))){
+
+            if (checkGeoFence && !geoFencePolicyOk(getCityCode(l),getCityCode(fs),getCityCode(ls))){
                 return false;
             }
-
 
 
             User driver = l.getAuthorizedDriver().getDriver();
@@ -146,9 +147,6 @@ public class TripImpl extends ModelImpl<Trip> {
     }
 
     private boolean geoFencePolicyOk(String driverCity, String startCity, String endCity) {
-        if (Database.getTable(GeoFencePolicy.class).recordCount() == 0){
-            return true;
-        }
         Expression where = new Expression(getReflector().getPool(),Conjunction.AND);
         {
             Expression cityWhere = new Expression(getPool(), Conjunction.OR);
