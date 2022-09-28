@@ -130,7 +130,7 @@ public interface Trip extends Model, GeoLocation {
     public List<TripStop>  getTripStops();
 
 
-    public void allocate();
+    public List<AllocationOption> loadAllocationOptions();
 
     public Double getPrice();
     public void setPrice (Double price);
@@ -160,5 +160,11 @@ public interface Trip extends Model, GeoLocation {
 
     @IS_VIRTUAL
     public TripStop getFirstStop();
+
+    public List<RejectedTrip> getRejectedTrips();
+
+    public List<AllocationOption> getAllocationOptions();
+
+    public void allocate();
 
 }

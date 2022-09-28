@@ -30,6 +30,7 @@ import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
 import in.succinct.bpp.cabs.db.model.supply.Vehicle;
+import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.bouncycastle.util.Times;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -37,6 +38,7 @@ import org.json.simple.JSONValue;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,6 +94,9 @@ public class TripImpl extends ModelImpl<Trip> {
         Expression expression = new BoundingBox(new GeoCoordinate(start),1,Config.instance().getIntProperty("bpp.cabs.search.radius",500)).
                 getWhereClause(DriverLogin.class).
                 add(loggedInDriver);
+        if (getProxy().getDriverLoginId() != null){
+            expression.add(new Expression(getReflector().getPool(), "ID" , Operator.EQ, getProxy().getDriverLoginId()));
+        }
 
 
         Database.getInstance().getCache(ref).clear(); //Bug in Select
@@ -246,8 +251,31 @@ public class TripImpl extends ModelImpl<Trip> {
             return getProxy().getDriverLogin().getLng();
         }
     }
-    public void allocate(){
+
+    public void allocate() {
         Trip trip = getProxy();
+
+        List<AllocationOption> options = loadAllocationOptions();
+        trip.setDriverLoginId(null);
+        trip.setDriverAcceptanceStatus(null);
+        //List<AllocationOption> options = trip.getAllocationOptions();
+        if (!options.isEmpty()){
+            AllocationOption option = options.get(0);
+            trip.setDeploymentPurposeId(option.getDeploymentPurposeId());
+            trip.setSellingPrice(option.getSellingPrice());
+            trip.setPrice(option.getPrice());
+            trip.setCGst(option.getCGst());
+            trip.setSGst(option.getSGst());
+            trip.setDriverLoginId(option.getDriverLoginId());
+        }
+        trip.save();
+
+    }
+
+    public List<AllocationOption> loadAllocationOptions(){
+        Trip trip = getProxy();
+        trip.getAllocationOptions().forEach(ao->ao.destroy());
+
         Bucket distance = new Bucket();
         Bucket time = new Bucket();
         TripStop start = null;
@@ -260,8 +288,6 @@ public class TripImpl extends ModelImpl<Trip> {
             }
             end = ts;
         }
-        trip.setDriverLoginId(null);
-        trip.setDriverAcceptanceStatus(null);
         SortedSet<String> tags = new TreeSet<>();
 
         StringTokenizer tok = new StringTokenizer(StringUtil.valueOf(trip.getVehicleTags()),",");
@@ -324,26 +350,27 @@ public class TripImpl extends ModelImpl<Trip> {
             }
         });
         purposeSet.addAll(totalSellingPrice.keySet());
+
+        List<AllocationOption> options = new ArrayList<>();
         for (Long deploymentPurposeId : purposeSet){
             DeploymentPurpose deploymentPurpose = Database.getTable(DeploymentPurpose.class).get(deploymentPurposeId);
             List<DriverLogin> logins = getAvailableVehicles(start,deploymentPurpose,tags);
-            if (!logins.isEmpty()){
-                trip.setDeploymentPurposeId(deploymentPurposeId);
-                trip.setSellingPrice(totalSellingPrice.get(deploymentPurposeId).doubleValue());
-                trip.setPrice(totalPrice.get(deploymentPurposeId).doubleValue());
-                double tax = trip.getSellingPrice() - trip.getPrice();
-                trip.setCGst(tax/2.0);
-                trip.setSGst(tax/2.0);
-                trip.setDriverLoginId(logins.get(0).getId());
-
-                trip.save();
+            for (DriverLogin login : logins){
+                AllocationOption option = Database.getTable(AllocationOption.class).newRecord();
+                option.setTripId(trip.getId());
+                option.setDeploymentPurposeId(deploymentPurposeId);
+                option.setSellingPrice(totalSellingPrice.get(deploymentPurposeId).doubleValue());
+                option.setPrice(totalPrice.get(deploymentPurposeId).doubleValue());
+                double tax = option.getSellingPrice() - option.getPrice();
+                option.setCGst(tax/2.0);
+                option.setSGst(tax/2.0);
+                option.setDriverLoginId(logins.get(0).getId());
+                option.save();
+                options.add(option);
                 break;
             }
         }
-        if (trip.getDriverLoginId() == null){
-            throw new RuntimeException("No Driver available");
-        }
-
+        return options;
 
     }
     public void start(){
