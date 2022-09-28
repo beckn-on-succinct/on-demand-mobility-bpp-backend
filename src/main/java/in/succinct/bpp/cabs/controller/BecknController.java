@@ -130,8 +130,12 @@ public class BecknController extends Controller {
         StringBuilder itemName = new StringBuilder();
         itemName.append(trip.getDeploymentPurpose().getName());
 
+        /*
         for (String tag : trip.getDriverLogin().getAuthorizedDriver().getVehicle().getTagSet()) {
             itemName.append("-").append(tag);
+        }*/
+        if (!ObjectUtil.isVoid(trip.getVehicleTags())) {
+            itemName.append("-").append(trip.getVehicleTags());
         }
 
         item.getDescriptor().setName(itemName.toString());
@@ -141,6 +145,14 @@ public class BecknController extends Controller {
         item.getPrice().setValue(trip.getSellingPrice());
 
         item.setFulfillmentId(getBecknId(trip.getId(),Entity.fulfillment,context));
+        Tags tags = new Tags();
+        for (String tag : trip.getDriverLogin().getAuthorizedDriver().getVehicle().getTagSet()) {
+            String[] splits = tag.split(":");
+            if (splits.length == 2) {
+                tags.set(splits[0], splits[1]);
+            }
+        }
+
         provider.getItems().add(item);
     }
     public void setProviderLocations(Trip trip, Provider provider, Context context){
