@@ -24,6 +24,7 @@ import com.venky.swf.sql.Select;
 import com.venky.swf.views.BytesView;
 import com.venky.swf.views.View;
 import in.succinct.beckn.Address;
+import in.succinct.beckn.Agent;
 import in.succinct.beckn.Billing;
 import in.succinct.beckn.BreakUp;
 import in.succinct.beckn.BreakUp.BreakUpElement;
@@ -188,6 +189,15 @@ public class BecknController extends Controller {
         fulfillment.setVehicle(vehicle);
         vehicle.setRegistration(trip.getDriverLogin().getAuthorizedDriver().getVehicle().getVehicleNumber());
         fulfillment.setId(getBecknId(trip.getId(),Entity.fulfillment,context));
+
+        if (trip.getDriverId() != null) {
+            User driver = trip.getDriver();
+
+            Agent agent = new Agent();
+            fulfillment.setAgent(agent);
+            agent.setName(driver.getName());
+            agent.setPhone(driver.getPhoneNumber());
+        }
 
     }
     public void setFulfillment(@NotNull Trip trip, Catalog catalog,Context context){
