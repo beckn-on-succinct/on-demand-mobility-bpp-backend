@@ -152,6 +152,7 @@ public class BecknController extends Controller {
                 tags.set(splits[0], splits[1]);
             }
         }
+        item.setTags(tags);
 
         provider.getItems().add(item);
     }
