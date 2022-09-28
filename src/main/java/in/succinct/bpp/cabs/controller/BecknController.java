@@ -195,7 +195,7 @@ public class BecknController extends Controller {
 
             Agent agent = new Agent();
             fulfillment.setAgent(agent);
-            agent.setName(driver.getName());
+            agent.setName(driver.getLongName());
             agent.setPhone(driver.getPhoneNumber());
         }
 
