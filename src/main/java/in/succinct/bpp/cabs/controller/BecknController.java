@@ -73,6 +73,7 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -471,10 +472,22 @@ public class BecknController extends Controller {
         if (order.getItems().size() >0){
             Item item = order.getItems().get(0);
             Long deploymentPurposeId = Long.parseLong(getLocalUniqueId(item.getCategoryId(),Entity.category));
-            trip.setDeploymentPurposeId(deploymentPurposeId); //Set Deployment purpose
             Long driverLoginId = Long.parseLong(getLocalUniqueId(item.getId(),Entity.item));
-            trip.setDriverLoginId(driverLoginId); //Set Login
-            trip.setVehicleTags(trip.getDriverLogin().getAuthorizedDriver().getVehicle().getTags());
+
+            Optional<AllocationOption> oao = trip.getAllocationOptions().stream().filter(allocationOption ->
+                    ObjectUtil.equals(allocationOption.getDeploymentPurposeId(),deploymentPurposeId) &&
+                    ObjectUtil.equals(driverLoginId,allocationOption.getDriverLoginId())).findFirst();
+
+            AllocationOption ao = oao.get();
+
+            trip.setDeploymentPurposeId(ao.getDeploymentPurposeId()); //Set Deployment purpose
+            trip.setDriverLoginId(ao.getDriverLoginId()); //Set Login
+            trip.setVehicleTags(ao.getDriverLogin().getAuthorizedDriver().getVehicle().getTags());
+            trip.setPrice(ao.getPrice());
+            trip.setSellingPrice(ao.getSellingPrice());
+            trip.setCGst(ao.getCGst());
+            trip.setSGst(ao.getSGst());
+            trip.setIGst(ao.getIGst());
             trip.save();
         }
 
