@@ -123,7 +123,9 @@ public class BecknController extends Controller {
         }
         if (company != null){
             setProvider(trip,provider,context,company);
-            providers.add(provider);
+            if (providers.get(provider.getId()) == null) {
+                providers.add(provider);
+            }
 
             setProviderLocations(trip,provider,context,ao);
             setCategories(trip,provider,context,ao);
