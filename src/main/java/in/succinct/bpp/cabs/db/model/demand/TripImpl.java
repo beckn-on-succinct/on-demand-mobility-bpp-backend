@@ -300,11 +300,13 @@ public class TripImpl extends ModelImpl<Trip> {
         if (!trip.getReflector().isVoid(trip.getDeploymentPurposeId() )) {
             where.add(new Expression(select.getPool(), "DEPLOYMENT_PURPOSE_ID", Operator.EQ, trip.getDeploymentPurposeId()));
         }
+
+        Expression tagWhere = new Expression(select.getPool(),Conjunction.OR);
         if (!tags.isEmpty()) {
-            where.add(new Expression(select.getPool(), "TAG", Operator.IN, tags.toArray()));
-        }else {
-            where.add(new Expression(select.getPool(), "TAG", Operator.EQ));
+            tagWhere.add(new Expression(select.getPool(), "TAG", Operator.IN, tags.toArray()));
         }
+        tagWhere.add(new Expression(select.getPool(), "TAG", Operator.EQ));
+        where.add(tagWhere);
 
         Expression fromKmWhere = new Expression(select.getPool(),Conjunction.OR);
         fromKmWhere.add(new Expression(select.getPool(), "FROM_KMS",Operator.EQ));
