@@ -7,4 +7,7 @@ public interface DeploymentPurpose extends Model {
     @UNIQUE_KEY
     public String getName();
     public void setName(String name);
+
+    public String getImageUrl();
+    public void setImageUrl(String imageUrl);
 }

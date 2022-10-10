@@ -39,6 +39,7 @@ import in.succinct.beckn.Error.Type;
 import in.succinct.beckn.Fulfillment;
 import in.succinct.beckn.FulfillmentStop;
 import in.succinct.beckn.Fulfillments;
+import in.succinct.beckn.Images;
 import in.succinct.beckn.Item;
 import in.succinct.beckn.Items;
 import in.succinct.beckn.Location;
@@ -190,6 +191,11 @@ public class BecknController extends Controller {
         item.setId(getBecknId(login.getId(), Entity.item, context));
         item.getDescriptor().setName(itemName.toString());
         item.getDescriptor().setCode(itemName.toString());
+        if (!ObjectUtil.isVoid(purpose.getImageUrl())){
+            Images images = new Images();
+            item.getDescriptor().setImages(images);
+            images.add(Config.instance().getServerBaseUrl() + "/" + purpose.getImageUrl());
+        }
         Tags tags = new Tags();
         for (String tag : login.getAuthorizedDriver().getVehicle().getTagSet()) {
             String[] splits = tag.split(":");
