@@ -62,16 +62,16 @@
         <version>LATEST</version>
         <scope>test</scope>
     </dependency>
-        <dependency>
-            <groupId>com.github.venkatramanm</groupId>
-            <artifactId>common</artifactId>
-            <version>1.19-SNAPSHOT</version>
-        </dependency>
       <dependency>
           <groupId>com.github.venkatramanm.swf-all</groupId>
           <artifactId>swf</artifactId>
           <version>${revision}</version>
       </dependency>
+        <dependency>
+            <groupId>com.github.venkatramanm</groupId>
+            <artifactId>common</artifactId>
+            <version>1.19-SNAPSHOT</version>
+        </dependency>
       <dependency>
           <groupId>com.github.venkatramanm.swf-all</groupId>
           <artifactId>swf-plugin-calendar</artifactId>
