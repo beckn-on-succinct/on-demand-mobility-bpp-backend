@@ -71,12 +71,14 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -371,6 +373,12 @@ public class BecknController extends Controller {
         return api();
     }
     @RequireLogin(false)
+    public View support(){
+        return api();
+    }
+
+
+    @RequireLogin(false)
     public View init(){
         return api();
     }
@@ -473,6 +481,29 @@ public class BecknController extends Controller {
             setProviders(trip, catalog.getProviders(), reply.getContext(),ao);
         });
         setFulfillment(trip,catalog,reply.getContext());
+    }
+    public void support(Request request,Request reply){
+        reply.setMessage(new Message());
+        reply.getMessage().setEmail("support@"+ getFQDomainName(Config.instance().getHostName()));
+    }
+    public static String getFQDomainName(String domainName) {
+        List<String> domainParts = new ArrayList<>();
+        StringTokenizer tok = new StringTokenizer(domainName,".");
+        while (tok.hasMoreTokens()){
+            domainParts.add(tok.nextToken());
+        }
+        while (domainParts.size() > 2){
+            domainParts.remove(0);
+        }
+        StringBuilder fQdomainName = new StringBuilder();
+        for (String part: domainParts){
+            if(fQdomainName.length() > 0){
+                fQdomainName.append(".");
+            }
+            fQdomainName.append(part);
+        }
+        return fQdomainName.toString();
+
     }
     public void select(Request request,Request reply){
         Order order = request.getMessage().getOrder();
