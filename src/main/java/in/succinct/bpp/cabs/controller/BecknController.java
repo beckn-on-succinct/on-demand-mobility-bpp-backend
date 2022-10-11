@@ -39,6 +39,7 @@ import in.succinct.beckn.Error.Type;
 import in.succinct.beckn.Fulfillment;
 import in.succinct.beckn.FulfillmentStop;
 import in.succinct.beckn.Fulfillments;
+import in.succinct.beckn.Image;
 import in.succinct.beckn.Images;
 import in.succinct.beckn.Item;
 import in.succinct.beckn.Items;
@@ -112,6 +113,9 @@ public class BecknController extends Controller {
         provider.setId(getBecknId(company.getId(), Entity.provider, context));
         provider.setDescriptor(new Descriptor());
         provider.getDescriptor().setName(company.getName());
+        Images images = new Images();
+        provider.getDescriptor().setImages(new Images());
+        images.add(Config.instance().getServerBaseUrl()+"/companies/view/"+company.getId());
     }
     public void setProviders(Trip trip, Providers providers, Context context, AllocationOption ao) {
         Provider provider = new Provider();
