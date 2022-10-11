@@ -114,7 +114,7 @@ public class BecknController extends Controller {
         provider.setDescriptor(new Descriptor());
         provider.getDescriptor().setName(company.getName());
         Images images = new Images();
-        provider.getDescriptor().setImages(new Images());
+        provider.getDescriptor().setImages(images);
         images.add(Config.instance().getServerBaseUrl()+"/companies/view/"+company.getId());
     }
     public void setProviders(Trip trip, Providers providers, Context context, AllocationOption ao) {
