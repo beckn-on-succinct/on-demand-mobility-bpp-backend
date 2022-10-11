@@ -17,4 +17,9 @@ public class CompaniesController extends ModelController<Company> {
         return super.index();
     }
 
+    @Override
+    @RequireLogin(false)
+    public View view(long id) {
+        return super.view(id);
+    }
 }
