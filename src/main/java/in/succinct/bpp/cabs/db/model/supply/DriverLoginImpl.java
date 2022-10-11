@@ -34,7 +34,7 @@ public class DriverLoginImpl extends ModelImpl<DriverLogin> {
     ObjectHolder<Trip> lastTrip = null;
     public Trip getLastTrip(){
         if (lastTrip == null){
-            Optional<Trip> optionalTrip = getProxy().getTrips().stream().filter(t->t.getStartTs() != null ).findFirst();
+            Optional<Trip> optionalTrip = getProxy().getTrips().stream().filter(t->t.getStartTs() != null || ObjectUtil.equals(t.getDriverAcceptanceStatus(),Trip.Accepted)).findFirst();
             lastTrip = new ObjectHolder<>(optionalTrip.orElse(null));
         }
         return lastTrip.get();
