@@ -1,0 +1,10 @@
+{
+  "context": {
+    "city": "std:080",
+    "bpp_id": "becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in",
+    "action": "track"
+  },
+  "message": {
+    "order_id": "./mobility/ind.blr/841@becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in.fulfillment"
+  }
+}

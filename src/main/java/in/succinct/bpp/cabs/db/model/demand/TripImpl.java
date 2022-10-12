@@ -24,6 +24,12 @@ import com.venky.swf.sql.Conjunction;
 import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
+import in.succinct.beckn.Context;
+import in.succinct.beckn.Message;
+import in.succinct.beckn.Request;
+import in.succinct.becknify.client.Becknify;
+import in.succinct.bpp.cabs.BecknUtil;
+import in.succinct.bpp.cabs.controller.BecknController;
 import in.succinct.bpp.cabs.db.model.pricing.TariffCard;
 import in.succinct.bpp.cabs.db.model.service.GeoFencePolicy;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
@@ -453,4 +459,29 @@ public class TripImpl extends ModelImpl<Trip> {
         }
         return status.toString();
     }
+
+    public void notifyBap() {
+        Trip model = getProxy();
+        if (ObjectUtil.isVoid(model.getBapId()) || ObjectUtil.isVoid(model.getTransactionId())){
+            return;
+        }
+        Request request = new Request();
+        Context context = new Context();
+        request.setContext(context);
+        context.setBapId(model.getBapId());
+        context.setTransactionId(model.getTransactionId());
+
+        request.setMessage(new Message());
+        request.getMessage().setOrder(new BecknUtil().getBecknOrder(model,request));
+
+        Becknify.getInstance().build().auth(
+                Config.instance().getProperty(String.format("l1.%s.client.id",Config.instance().getProperty("l1.accelerator"))),
+                Config.instance().getProperty(String.format("l1.%s.client.secret",Config.instance().getProperty("l1.accelerator")))
+        ).domain(
+                Config.instance().getProperty(String.format("l1.%s.client.domain",Config.instance().getProperty("l1.accelerator")))
+        ).network(Config.instance().getProperty(String.format("l1.%s.client.network",Config.instance().getProperty("l1.accelerator")))).on_status(
+                request,10000L
+        );
+    }
+
 }

@@ -15,6 +15,12 @@ import com.venky.swf.db.annotations.column.validations.IntegerRange;
 import com.venky.swf.db.annotations.model.MENU;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.routing.Config;
+import in.succinct.beckn.Context;
+import in.succinct.beckn.Message;
+import in.succinct.beckn.Request;
+import in.succinct.becknify.client.Becknify;
+import in.succinct.bpp.cabs.BecknUtil;
+import in.succinct.bpp.cabs.controller.BecknController;
 import in.succinct.bpp.cabs.db.model.routes.Route;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
@@ -166,5 +172,16 @@ public interface Trip extends Model, GeoLocation {
     public List<AllocationOption> getAllocationOptions();
 
     public void allocate();
+
+
+    public String getTransactionId();
+    public void setTransactionId(String transactionId);
+
+
+    public String getBapId();
+    public void setBapId(String bapId);
+
+    @IS_VIRTUAL
+    public void notifyBap();
 
 }

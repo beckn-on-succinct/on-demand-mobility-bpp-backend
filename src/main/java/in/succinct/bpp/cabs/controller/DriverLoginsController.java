@@ -8,8 +8,11 @@ import com.venky.swf.db.Database;
 import com.venky.swf.db.annotations.column.ui.mimes.MimeType;
 import com.venky.swf.exceptions.AccessDeniedException;
 import com.venky.swf.path.Path;
+import com.venky.swf.plugins.background.core.Task;
+import com.venky.swf.plugins.background.core.TaskManager;
 import com.venky.swf.views.BytesView;
 import com.venky.swf.views.View;
+import in.succinct.bpp.cabs.db.model.demand.Trip;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
 
@@ -27,7 +30,16 @@ public class DriverLoginsController extends ModelController<DriverLogin> {
                 //Only self can update.
                 User u = getSessionUser();
                 if (u.getCurrentLat() != null && u.getCurrentLng() != null){
+                    Trip lastTrip = login.getLastTrip();
+                    String oldStatus = lastTrip != null ? lastTrip.getDisplayStatus() : null ;
                     login.updateLocation(new GeoCoordinate(u.getCurrentLat(),u.getCurrentLng()));
+
+                    String newStatus = lastTrip != null ? lastTrip.getDisplayStatus() : null;
+                    if (lastTrip != null && ObjectUtil.equals(lastTrip.getStatus(),Trip.Confirmed) && ObjectUtil.equals(lastTrip.getDriverAcceptanceStatus(), Trip.Accepted) &&
+                            !ObjectUtil.equals(oldStatus,newStatus)){
+                        //To handle multiple display status change while doing location updates when driver is going to pick up the passenger.
+                        TaskManager.instance().executeAsync((Task)()->lastTrip.notifyBap(),false);
+                    }
                 }
             }else {
                 throw new AccessDeniedException();
