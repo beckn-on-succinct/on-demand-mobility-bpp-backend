@@ -606,7 +606,7 @@ public class BecknUtil {
     }
 
     public static String getIdSuffix(Context context){
-        return context.getBppId();
+        return Config.instance().getHostName();
     }
     public enum Entity {
         fulfillment,
