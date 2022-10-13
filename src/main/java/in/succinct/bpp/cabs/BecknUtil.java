@@ -427,6 +427,7 @@ public class BecknUtil {
     public void support(Request request,Request reply){
         reply.setMessage(new Message());
         reply.getMessage().setEmail("support@"+ getFQDomainName(Config.instance().getHostName()));
+        reply.getMessage().setPhone("+911234567890");
     }
     public static String getFQDomainName(String domainName) {
         List<String> domainParts = new ArrayList<>();
