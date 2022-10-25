@@ -469,6 +469,7 @@ public class TripImpl extends ModelImpl<Trip> {
         Context context = new Context();
         request.setContext(context);
         context.setBapId(model.getBapId());
+        context.setCity(model.getDriverLogin().getAuthorizedDriver().getDriver().getCity().getCode());
         context.setTransactionId(model.getTransactionId());
 
         request.setMessage(new Message());
