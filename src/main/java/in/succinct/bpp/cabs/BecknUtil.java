@@ -340,6 +340,7 @@ public class BecknUtil {
         Contact contact =customer.getContact();
         contact.setEmail(trip.getPassenger().getEmail());
         contact.setPhone(trip.getPassenger().getPhoneNumber());
+        customer.getPerson().setName(trip.getPassenger().getLongName());
 
     }
 
