@@ -15,6 +15,8 @@ then
        ADDITONAL_HEADER="X-CallBackToBeSynchronized:N" 
     fi
 fi
+test_auth="Zmlyc3RBcHA6dmVua3kxMg=="
+
 
 echo curl -H \'content-type:application/json\' -H \'$ADDITONAL_HEADER\' -H \'Authorization: Basic ${test_auth}\' https://becknify.humbhionline.in/mobility/beckn_open/firstApp/bap/api/bg/$1  -d @src/test/resources/$1.json
 

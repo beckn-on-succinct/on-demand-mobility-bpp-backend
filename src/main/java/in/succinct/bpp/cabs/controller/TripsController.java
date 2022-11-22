@@ -109,7 +109,7 @@ public class TripsController extends ModelController<Trip> {
 
             });
             if (trips.size() > maxRecords){
-                trips = trips.subList(0,maxRecords-1);
+                trips = trips.subList(0,maxRecords);
             }
         }
 

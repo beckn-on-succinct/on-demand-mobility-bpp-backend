@@ -2,6 +2,8 @@ package in.succinct.bpp.cabs.controller;
 
 import com.venky.swf.controller.annotations.SingleRecordAction;
 import com.venky.swf.db.Database;
+import com.venky.swf.db.model.Model;
+import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.exceptions.AccessDeniedException;
 import com.venky.swf.path.Path;
 import com.venky.swf.plugins.security.db.model.Role;
@@ -14,7 +16,9 @@ import com.venky.swf.views.View;
 import in.succinct.bpp.cabs.db.model.supply.User;
 import in.succinct.bpp.cabs.db.model.supply.UserSummary;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class UsersController extends com.venky.swf.plugins.collab.controller.UsersController {
     public UsersController(Path path) {
@@ -39,7 +43,10 @@ public class UsersController extends com.venky.swf.plugins.collab.controller.Use
         return new ForwardedView(getPath(),"user_roles","show/"+userRole.getId());
     }
 
-
-
-
+    @Override
+    protected Map<Class<? extends Model>, List<String>> getIncludedModelFields() {
+        Map<Class<? extends Model>, List<String>> map = super.getIncludedModelFields();
+        map.put(User.class, ModelReflector.instance(User.class).getVisibleFields(Collections.emptyList()));
+        return map;
+    }
 }
