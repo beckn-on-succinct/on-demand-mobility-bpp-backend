@@ -46,7 +46,7 @@ public class UsersController extends com.venky.swf.plugins.collab.controller.Use
     @Override
     protected Map<Class<? extends Model>, List<String>> getIncludedModelFields() {
         Map<Class<? extends Model>, List<String>> map = super.getIncludedModelFields();
-        map.put(User.class, ModelReflector.instance(User.class).getVisibleFields(Collections.emptyList()));
+        map.put(User.class, ModelReflector.instance(User.class).getVisibleFields());
         return map;
     }
 }
