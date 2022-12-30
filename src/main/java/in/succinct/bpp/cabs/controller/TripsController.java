@@ -70,7 +70,7 @@ public class TripsController extends ModelController<Trip> {
                 "https://ontrack.becknprotocol.io"), Crypt.getInstance().toBase64(mapData.toString().getBytes(StandardCharsets.UTF_8)));
 
 
-        return new RedirectorView(getPath(),mapUrl);
+        return new RedirectorView(getPath(),mapUrl,"");
     }
 
     @SingleRecordAction(icon = "fas fa-binoculars")
