@@ -1,5 +1,6 @@
 package in.succinct.bpp.cabs.controller;
 
+import com.venky.core.security.Crypt;
 import com.venky.geo.GeoCoordinate;
 import com.venky.geo.GeoDistance;
 import com.venky.swf.controller.ModelController;
@@ -7,6 +8,7 @@ import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.annotations.column.ui.mimes.MimeType;
 import com.venky.swf.path.Path;
+import com.venky.swf.routing.Config;
 import com.venky.swf.sql.Conjunction;
 import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
@@ -36,6 +38,16 @@ public class TripsController extends ModelController<Trip> {
         Trip trip  = Database.getTable(Trip.class).get(id);
         JSONObject location = new JSONObject();
         location.put("gps",String.format("%f,%f",trip.getLat(),trip.getLng()));
+
+        JSONObject mapData = new JSONObject();
+        mapData.put("start",String.format("%f.%f",trip.getFirstStop().getLat(),trip.getFirstStop().getLng()));
+        mapData.put("end",String.format("%f.%f",trip.getLastStop().getLat(),trip.getLastStop().getLng()));
+        mapData.put("poll_url", Config.instance().getServerBaseUrl()+"/trips/location/"+trip.getId());
+
+        String mapUrl = String.format("%s?view=%s" , Config.instance().getProperty("map_url",
+                "https://ontrack.becknprotocol.io"), Crypt.getInstance().toBase64(mapData.toString().getBytes(StandardCharsets.UTF_8)));
+        location.put("map_url",mapUrl);
+
         return new BytesView(getPath(),location.toString().getBytes(StandardCharsets.UTF_8), MimeType.APPLICATION_JSON);
     }
 

@@ -42,11 +42,22 @@ public class UsersController extends com.venky.swf.plugins.collab.controller.Use
         }
         return new ForwardedView(getPath(),"user_roles","show/"+userRole.getId());
     }
+    @Override
+    protected String[] getIncludedFields() {
+        Map<Class<? extends Model>, List<String>> map  = getIncludedModelFields();
+        if (map.containsKey(User.class)){
+            return map.get(User.class).toArray(new String[]{});
+        }else {
+            return null;
+        }
+    }
 
     @Override
     protected Map<Class<? extends Model>, List<String>> getIncludedModelFields() {
         Map<Class<? extends Model>, List<String>> map = super.getIncludedModelFields();
-        map.put(User.class, ModelReflector.instance(User.class).getVisibleFields());
+        if (!map.containsKey(User.class)) {
+            map.put(User.class, ModelReflector.instance(User.class).getVisibleFields());
+        }
         return map;
     }
 }
