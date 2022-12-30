@@ -15,6 +15,7 @@ import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
 import com.venky.swf.views.BytesView;
+import com.venky.swf.views.RedirectorView;
 import com.venky.swf.views.View;
 import in.succinct.bpp.cabs.db.model.demand.Trip;
 import in.succinct.bpp.cabs.db.model.demand.TripStop;
@@ -40,6 +41,8 @@ public class TripsController extends ModelController<Trip> {
         JSONObject location = new JSONObject();
         location.put("gps",String.format("%f,%f",trip.getLat(),trip.getLng()));
 
+        location.put("map_url",Config.instance().getServerBaseUrl()+"/trips/show_map/"+trip.getId());
+        /*
         JSONObject mapData = new JSONObject();
         mapData.put("start",String.format("%f.%f",trip.getFirstStop().getLat(),trip.getFirstStop().getLng()));
         mapData.put("end",String.format("%f.%f",trip.getLastStop().getLat(),trip.getLastStop().getLng()));
@@ -50,8 +53,24 @@ public class TripsController extends ModelController<Trip> {
         String mapUrl = String.format("%s?view=%s" , Config.instance().getProperty("map_url",
                 "https://ontrack.becknprotocol.io"), Crypt.getInstance().toBase64(mapData.toString().getBytes(StandardCharsets.UTF_8)));
         location.put("map_url",mapUrl);
-
+        */
         return new BytesView(getPath(),location.toString().getBytes(StandardCharsets.UTF_8), MimeType.APPLICATION_JSON);
+    }
+
+    @RequireLogin(value = false)
+    public View show_map(long id){
+        Trip trip  = Database.getTable(Trip.class).get(id);
+
+        JSONObject mapData = new JSONObject();
+        mapData.put("start",String.format("%f.%f",trip.getFirstStop().getLat(),trip.getFirstStop().getLng()));
+        mapData.put("end",String.format("%f.%f",trip.getLastStop().getLat(),trip.getLastStop().getLng()));
+        mapData.put("gps",String.format("%f,%f",trip.getLat(),trip.getLng()));
+        mapData.put("poll_url", Config.instance().getServerBaseUrl()+"/trips/location/"+trip.getId());
+        String mapUrl = String.format("%s?view=%s" , Config.instance().getProperty("map_url",
+                "https://ontrack.becknprotocol.io"), Crypt.getInstance().toBase64(mapData.toString().getBytes(StandardCharsets.UTF_8)));
+
+
+        return new RedirectorView(getPath(),mapUrl);
     }
 
     @SingleRecordAction(icon = "fas fa-binoculars")
