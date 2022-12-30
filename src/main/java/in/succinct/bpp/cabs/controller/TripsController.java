@@ -42,6 +42,8 @@ public class TripsController extends ModelController<Trip> {
         JSONObject mapData = new JSONObject();
         mapData.put("start",String.format("%f.%f",trip.getFirstStop().getLat(),trip.getFirstStop().getLng()));
         mapData.put("end",String.format("%f.%f",trip.getLastStop().getLat(),trip.getLastStop().getLng()));
+        mapData.putAll(location);
+
         mapData.put("poll_url", Config.instance().getServerBaseUrl()+"/trips/location/"+trip.getId());
 
         String mapUrl = String.format("%s?view=%s" , Config.instance().getProperty("map_url",
