@@ -5,6 +5,7 @@ import com.venky.geo.GeoCoordinate;
 import com.venky.geo.GeoDistance;
 import com.venky.swf.controller.ModelController;
 import com.venky.swf.controller.annotations.RequireLogin;
+import com.venky.swf.controller.annotations.SingleRecordAction;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.annotations.column.ui.mimes.MimeType;
 import com.venky.swf.path.Path;
@@ -53,35 +54,42 @@ public class TripsController extends ModelController<Trip> {
         return new BytesView(getPath(),location.toString().getBytes(StandardCharsets.UTF_8), MimeType.APPLICATION_JSON);
     }
 
+    @SingleRecordAction(icon = "fas fa-binoculars")
     public View allocate(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.allocate();
         return show(trip);
     }
 
+    @SingleRecordAction(icon = "fas fa-play")
     public View start(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.start();
         return show(trip);
     }
+    @SingleRecordAction(icon = "fas fa-stop")
     public View end(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.end();
         return show(trip);
     }
 
+    @SingleRecordAction(icon = "fas fa-thumbs-up")
     public View accept(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.accept();
         return show(trip);
 
     }
+
+    @SingleRecordAction(icon = "fas fa-thumbs-down")
     public View reject(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.reject();
         return show(trip);
     }
 
+    @SingleRecordAction(icon = "fas fa-times")
     public View cancel(long id){
         Trip trip = Database.getTable(Trip.class).get(id);
         trip.cancel();
