@@ -58,6 +58,8 @@ public class UsersController extends com.venky.swf.plugins.collab.controller.Use
         if (!map.containsKey(User.class)) {
             map.put(User.class, ModelReflector.instance(User.class).getVisibleFields());
         }
+        List<String> fields = getReflector().getFields();
+        map.get(User.class).retainAll(fields);
         return map;
     }
 }
