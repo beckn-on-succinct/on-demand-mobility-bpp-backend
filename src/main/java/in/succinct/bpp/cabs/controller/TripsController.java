@@ -115,7 +115,7 @@ public class TripsController extends ModelController<Trip> {
         return show(trip);
     }
 
-    public View next(int maxRecords){
+    public View next(String maxRecords){
         User user = (User)getPath().getSessionUser();
         List<DriverLogin> logins = user.getMaxDriverLogins(1);
         DriverLogin login = logins.isEmpty()? null : logins.get(0);
@@ -149,7 +149,7 @@ public class TripsController extends ModelController<Trip> {
                 return (int) ret;
 
             });
-            if (trips.size() > maxRecords){
+            if (trips.size() > Long.parseLong(maxRecords)){
                 trips = trips.subList(0,maxRecords);
             }
         }
