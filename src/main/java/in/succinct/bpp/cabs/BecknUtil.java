@@ -8,6 +8,7 @@ import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.plugins.collab.db.model.config.City;
 import com.venky.swf.plugins.collab.db.model.config.Country;
 import com.venky.swf.plugins.collab.db.model.config.PinCode;
+import com.venky.swf.plugins.collab.db.model.config.State;
 import com.venky.swf.plugins.collab.db.model.participants.admin.Company;
 import com.venky.swf.plugins.collab.db.model.user.Email;
 import com.venky.swf.plugins.collab.db.model.user.Phone;
@@ -548,7 +549,21 @@ public class BecknUtil {
         user.setAddressLine2(address.getDoor() + "," + address.getBuilding());
         user.setAddressLine3(address.getLocality());
         user.setCountryId(Country.findByISO(address.getCountry()).getId());
-        user.setCityId(Objects.requireNonNull(City.findByCode(address.getCity())).getId());
+        State state = State.findByCountryAndName(user.getCountryId(),address.getState());
+        if (state != null){
+            user.setStateId(state.getId());
+            City city = City.findByStateAndName(user.getStateId(),address.getCity());
+            if (city != null){
+                user.setCityId(city.getId());
+            }
+        }
+        if (user.getCityId() == null) {
+            City city = City.findByCode(address.getCity());
+            if (city != null) {
+                user.setCityId(city.getId());
+            }
+        }
+
         user.setPinCodeId(Objects.requireNonNull(PinCode.find(address.getPinCode())).getId());
         user = Database.getTable(User.class).getRefreshed(user);
         user.save();
