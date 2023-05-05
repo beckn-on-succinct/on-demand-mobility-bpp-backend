@@ -14,13 +14,7 @@ import com.venky.swf.db.annotations.column.validations.Enumeration;
 import com.venky.swf.db.annotations.column.validations.IntegerRange;
 import com.venky.swf.db.annotations.model.MENU;
 import com.venky.swf.db.model.Model;
-import com.venky.swf.routing.Config;
-import in.succinct.beckn.Context;
-import in.succinct.beckn.Message;
-import in.succinct.beckn.Request;
-import in.succinct.becknify.client.Becknify;
-import in.succinct.bpp.cabs.BecknUtil;
-import in.succinct.bpp.cabs.controller.BecknController;
+import in.succinct.beckn.Order.Status;
 import in.succinct.bpp.cabs.db.model.routes.Route;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
@@ -28,7 +22,6 @@ import in.succinct.bpp.cabs.db.model.supply.User;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.List;
 
 @MENU("Trip")
@@ -49,6 +42,9 @@ public interface Trip extends Model, GeoLocation {
 
     @IS_VIRTUAL
     public String getDisplayStatus();
+
+    @IS_VIRTUAL
+    public Status getBecknOrderStatus();
 
 
     public static  final String Rejected = "Rejected";

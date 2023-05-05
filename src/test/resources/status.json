@@ -1,10 +1,10 @@
 {
   "context": {
     "city": "std:080",
-    "bpp_id": "becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in",
-    "action": "select"
+    "bpp_id": "becknify.humbhionline.in/mobility/beckn_open/taxi-staging/bpp",
+    "action": "status"
   },
   "message": {
-    "order_id" : "./mobility/ind.blr/431@becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in.order"
+    "order_id" : "./mobility/ind.blr/179@becknify.humbhionline.in.mobility.BPP/beckn_open/taxi-staging.order"
   }
 }

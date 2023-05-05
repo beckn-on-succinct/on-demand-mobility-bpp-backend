@@ -40,7 +40,7 @@ public class UsersController extends com.venky.swf.plugins.collab.controller.Use
         if (userRole.getRawRecord().isNewRecord()) {
             userRole.save();
         }
-        return new ForwardedView(getPath(),"user_roles","show/"+userRole.getId());
+        return new ForwardedView( getPath(),"user_roles","show/"+userRole.getId());
     }
     @Override
     protected String[] getIncludedFields() {

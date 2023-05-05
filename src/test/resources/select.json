@@ -1,14 +1,1 @@
-{
-  "context": {
-    "city": "std:080",
-    "bpp_id": "becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in",
-    "action": "select"
-  },
-  "message": {
-    "order": {
-      "fulfillment": {
-        "id" : "./mobility/ind.blr/463@becknify.humbhionline.in.mobility.BPP/beckn_open/app1-succinct-in.fulfillment",
-      }
-    }
-  }
-}
+{"context":{"domain":"nic2004:60221","country":"IND","city":"std:080","core_version":"0.9.1","action":"select","bap_id":"mobilityreferencebap.becknprotocol.io","bap_uri":"https://mobilityreferencebap.becknprotocol.io","bpp_id":"cabs.succinct.in","bpp_uri":"https://cabs.succinct.in/bpp","transaction_id":"24cac569-ead2-4534-8ab6-cf7ee68c539d.659cad2d-e2a4-45cf-9bcd-04dc15871fd8","message_id":"93579cc3-0c8b-4e09-a652-2079d901d63e","timestamp":"2023-05-04T15:23:37.420Z","ttl":"PT1M"},"message":{"order":{"items":[{"id":"./mobility/ind.blr/3@cabs.succinct.in.item","descriptor":{"name":"Taxi Go","code":"Taxi Go","images":["https://cabs.succinct.in/resources/images/car.png"]},"price":{"currency":"INR","value":"134.02425515111636","estimated_value":"0.0","computed_value":"0.0","listed_value":"0.0","offered_value":"0.0","minimum_value":"0.0","maximum_value":"0.0"},"category_id":"./mobility/ind.blr/1@cabs.succinct.in.category","tags":{},"fulfillment_id":"./mobility/ind.blr/63@cabs.succinct.in.fulfillment","rateable":false}],"fulfillment":{"id":"./mobility/ind.blr/63@cabs.succinct.in.fulfillment","tracking":false}}}}

@@ -22,6 +22,7 @@ import in.succinct.beckn.Agent;
 import in.succinct.beckn.Billing;
 import in.succinct.beckn.BreakUp;
 import in.succinct.beckn.BreakUp.BreakUpElement;
+import in.succinct.beckn.BreakUp.BreakUpElement.BreakUpCategory;
 import in.succinct.beckn.Catalog;
 import in.succinct.beckn.Categories;
 import in.succinct.beckn.Category;
@@ -53,6 +54,8 @@ import in.succinct.bpp.cabs.db.model.demand.TripStop;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
+import in.succinct.bpp.core.adaptor.api.BecknIdHelper;
+import in.succinct.bpp.core.adaptor.api.BecknIdHelper.Entity;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Timestamp;
@@ -246,6 +249,7 @@ public class BecknUtil {
     }
     public void setFulfillment(@NotNull Trip trip, Catalog catalog, Context context){
         Fulfillment fulfillment = new Fulfillment();
+        fulfillment.setId(getBecknId(trip.getId(),Entity.fulfillment,context));
         catalog.setFulfillments(new Fulfillments());
         catalog.getFulfillments().add(fulfillment);
         setFulfillment(trip,fulfillment,context);
@@ -260,12 +264,12 @@ public class BecknUtil {
         quote.setBreakUp(breakUp);
 
         Price price = new Price();
-        BreakUpElement fareBreakup = breakUp.createElement("item","Fare",price);
+        BreakUpElement fareBreakup = breakUp.createElement(BreakUpCategory.item,"Fare",price);
         price.setCurrency("INR");
         price.setValue(trip.getPrice());
 
         Price tax = new Price();
-        BreakUpElement taxBreakup = breakUp.createElement("item","Tax",tax);
+        BreakUpElement taxBreakup = breakUp.createElement(BreakUpCategory.item,"Tax",tax);
         TypeConverter<Double> typeConverter = trip.getReflector().getJdbcTypeHelper().getTypeRef(double.class).getTypeConverter();
         tax.setValue(typeConverter.valueOf(trip.getCGst()) +typeConverter.valueOf(trip.getIGst()) + typeConverter.valueOf((trip.getSGst())));
         tax.setCurrency("INR");
@@ -274,9 +278,9 @@ public class BecknUtil {
     }
 
     public Order getBecknOrder(Trip trip, Request reply){
-        Order order = new Order();
+        Order order = new in.succinct.beckn.boc.Order(); //TOFO FIX newwork hard code
         order.setId(getBecknId(trip.getId(),Entity.order,reply.getContext()));
-        order.setState(trip.getDisplayStatus());
+        order.setState(trip.getBecknOrderStatus());
 
         if (trip.getDriverLoginId() != null) {
             Provider provider = new Provider();
@@ -497,6 +501,9 @@ public class BecknUtil {
         tracking.setUrl(Config.instance().getServerBaseUrl()+"/trips/location/"+trip.getId());
     }
     public User ensurePassenger(in.succinct.beckn.User passenger){
+        if (passenger == null || passenger.getContact() == null){
+            return null;
+        }
         Select select = new Select().from(User.class);
         Expression where = new Expression(select.getPool(), Conjunction.AND);
         if (!ObjectUtil.isVoid(passenger.getContact().getEmail())){
@@ -506,7 +513,7 @@ public class BecknUtil {
         if (!ObjectUtil.isVoid(passenger.getContact().getPhone())){
             where.add(new Expression(select.getPool(), "PHONE_NUMBER", Operator.EQ, Phone.sanitizePhoneNumber(passenger.getContact().getPhone())));
         }
-        List<User> users = select.where(where).execute();
+        List<User> users = select.where(where).execute(2);
         if (users.isEmpty()){
             User user = Database.getTable(User.class).newRecord();
             user.setLongName(passenger.getPerson().getName());
@@ -516,9 +523,10 @@ public class BecknUtil {
             user = Database.getTable(User.class).getRefreshed(user);
             user.save();
             return user;
-        }else {
+        }else if (users.size() == 1){
             return users.get(0);
         }
+        return null;
     }
     public User ensureBiller(Billing billing){
         Select select = new Select().from(User.class);
@@ -549,7 +557,8 @@ public class BecknUtil {
         user.setAddressLine2(address.getDoor() + "," + address.getBuilding());
         user.setAddressLine3(address.getLocality());
         user.setCountryId(Country.findByISO(address.getCountry()).getId());
-        State state = State.findByCountryAndName(user.getCountryId(),address.getState());
+
+        State state = address.getState() != null ? State.findByCountryAndName(user.getCountryId(),address.getState()) : null;
         if (state != null){
             user.setStateId(state.getId());
             City city = City.findByStateAndName(user.getStateId(),address.getCity());
@@ -561,6 +570,7 @@ public class BecknUtil {
             City city = City.findByCode(address.getCity());
             if (city != null) {
                 user.setCityId(city.getId());
+                user.setStateId(city.getStateId());
             }
         }
 
@@ -571,18 +581,36 @@ public class BecknUtil {
     }
 
     public void init(Request request,Request reply){
-        Order order = request.getMessage().getOrder();
-        Trip trip = getTrip(order.getFulfillment().getId(),false);
+        Order passed = request.getMessage().getOrder();
+        Trip trip = getTrip(passed.getFulfillment().getId(),false);
+        Order order = getBecknOrder(trip,reply);
+        if (order == null ){
+            order = passed;
+        }else {
+            order.update(passed,false);
+        }
 
         in.succinct.beckn.User passenger = order.getFulfillment().getCustomer();
-        User user = ensurePassenger(passenger);
-        trip.setPassengerId(user.getId());
-
-
-
         Billing billing = order.getBilling();
+
+        User user = ensurePassenger(passenger);
+        if (user != null) {
+            trip.setPassengerId(user.getId());
+        }
+
+
+
         User biller = ensureBiller(billing);
-        trip.setPayerId(biller.getId());
+        if (biller != null) {
+            trip.setPayerId(biller.getId());
+        }
+        if (trip.getPassengerId() == null){
+            trip.setPassengerId(trip.getPayerId());
+        }
+        if (trip.getPayerId() == null){
+            trip.setPayerId(trip.getPassengerId());
+        }
+
         trip.save();
 
         Order tripOrder = getBecknOrder(trip,reply);

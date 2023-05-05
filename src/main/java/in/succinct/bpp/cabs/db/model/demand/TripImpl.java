@@ -10,13 +10,11 @@ import com.venky.geo.GeoCoder;
 import com.venky.geo.GeoCoder.GeoAddress;
 import com.venky.geo.GeoCoordinate;
 import com.venky.geo.GeoDistance;
-import com.venky.geo.GeoLocation;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
+import com.venky.swf.db.model.application.Event;
 import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.db.table.ModelImpl;
-import com.venky.swf.plugins.background.core.Task;
-import com.venky.swf.plugins.background.core.TaskManager;
 import com.venky.swf.plugins.collab.db.model.config.City;
 import com.venky.swf.plugins.collab.util.BoundingBox;
 import com.venky.swf.routing.Config;
@@ -26,31 +24,26 @@ import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
 import in.succinct.beckn.Context;
 import in.succinct.beckn.Message;
+import in.succinct.beckn.Order;
+import in.succinct.beckn.Order.Status;
+import in.succinct.beckn.Order.Status.StatusConverter;
 import in.succinct.beckn.Request;
-import in.succinct.becknify.client.Becknify;
+import in.succinct.beckn.State;
 import in.succinct.bpp.cabs.BecknUtil;
-import in.succinct.bpp.cabs.controller.BecknController;
 import in.succinct.bpp.cabs.db.model.pricing.TariffCard;
 import in.succinct.bpp.cabs.db.model.service.GeoFencePolicy;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
 import in.succinct.bpp.cabs.db.model.supply.Vehicle;
-import org.apache.xmlbeans.impl.xb.xsdschema.All;
-import org.bouncycastle.util.Times;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -435,6 +428,24 @@ public class TripImpl extends ModelImpl<Trip> {
         trip.save();
     }
 
+    static final Map<Status,String> statusLiteralMap = new HashMap<Status,String>(){{
+        put(Status.Awaiting_Agent_Acceptance ,"Awaiting Driver acceptance");
+        put(Status.Reaching_Pickup_Location,"Reaching Pickup location");
+        put(Status.Reached_Pickup_Location,"Reached Pickup location");
+        put(Status.Created,"Not Confirmed");
+        put(Status.Accepted,"Confirmed");
+        put(Status.In_progress,"Started");
+        put(Status.Completed,"Ended");
+        put(Status.Cancelled,"Cancelled");
+    }};
+    static final Map<String,Status> literalStatusMap = new HashMap<String,Status>(){{
+        statusLiteralMap.forEach((s,l)->put(l,s));
+    }};
+
+    public Status getBecknOrderStatus(){
+        return literalStatusMap.get(getDisplayStatus());
+    }
+
     public String getDisplayStatus(){
         StringBuilder status = new StringBuilder();
         Trip trip = getProxy();
@@ -475,14 +486,9 @@ public class TripImpl extends ModelImpl<Trip> {
         request.setMessage(new Message());
         request.getMessage().setOrder(new BecknUtil().getBecknOrder(model,request));
 
-        Becknify.getInstance().build().auth(
-                Config.instance().getProperty(String.format("l1.%s.client.id",Config.instance().getProperty("l1.accelerator"))),
-                Config.instance().getProperty(String.format("l1.%s.client.secret",Config.instance().getProperty("l1.accelerator")))
-        ).domain(
-                Config.instance().getProperty(String.format("l1.%s.client.domain",Config.instance().getProperty("l1.accelerator")))
-        ).network(Config.instance().getProperty(String.format("l1.%s.client.network",Config.instance().getProperty("l1.accelerator")))).on_status(
-                request,10000L
-        );
+
+        Event.find("notify_bap").raise(request);
+
     }
 
 }

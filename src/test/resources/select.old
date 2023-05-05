@@ -1,0 +1,44 @@
+{
+  "context": {
+    "city": "std:080",
+    "bpp_id": "cabs.succinct.in",
+     "transaction_id" : "b957b36f-66da-4ede-911f-0b6504bc5d10",
+    "action": "select"
+  },
+  "message": {
+    "order": {
+      "fulfillment": {
+        "id" : "./mobility/ind.blr/35@cabs.succinct.in.fulfillment"
+      },
+      "items" : [
+         {
+            "category_id" : "./mobility/ind.blr/1@cabs.succinct.in.category",
+            "descriptor" : {
+               "code" : "Taxi Go",
+               "images" : [
+                  "https://cabs.succinct.in/resources/images/car.png"
+               ],
+               "name" : "Taxi Go"
+            },
+            "fulfillment_id" : "./mobility/ind.blr/35@cabs.succinct.in.fulfillment",
+            "id" : "./mobility/ind.blr/3@cabs.succinct.in.item",
+            "matched" : false,
+            "price" : {
+               "computed_value" : "0.0",
+               "currency" : "INR",
+               "estimated_value" : "0.0",
+               "listed_value" : "0.0",
+               "maximum_value" : "0.0",
+               "minimum_value" : "0.0",
+               "offered_value" : "0.0",
+               "value" : "84.69672276156557"
+            },
+            "rateable" : false,
+            "recommended" : false,
+            "related" : false,
+            "tags" : {}
+         }
+      ]
+    }
+  }
+}

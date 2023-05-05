@@ -1,7 +1,7 @@
 {
 
-    "context": { "city": "std:080" , "bpp_id" : "becknify.humbhionline.in/mobility/beckn_open/taxi-staging/bpp"},
-  "message": {
+    "context": { "city": "std:080" , "bpp_id" : "cabs.succinct.in"},
+    "message": {
     "intent": {
             "fulfillment": {
                 "start": {
