@@ -6,6 +6,7 @@ import com.venky.core.util.ObjectUtil;
 import com.venky.extension.Extension;
 import com.venky.extension.Registry;
 import com.venky.swf.path.Path;
+import com.venky.swf.routing.Config;
 import in.succinct.beckn.Context;
 import in.succinct.beckn.Message;
 import in.succinct.beckn.Order;
@@ -65,6 +66,9 @@ public class Webhook implements Extension {
                     context.setBapUri(subscriberList.get(0).getSubscriberUrl());
                 }
             }
+            context.setCountry(eCommerceAdaptor.getSubscriber().getCountry());
+            context.setCity(eCommerceAdaptor.getSubscriber().getCity());
+            context.setCoreVersion("0.9.1");
             context.setDomain(eCommerceAdaptor.getSubscriber().getDomain());
             //Fill any other attributes needed.
             //Send unsolicited on_status.
