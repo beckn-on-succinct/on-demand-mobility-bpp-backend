@@ -10,6 +10,7 @@ import in.succinct.beckn.Context;
 import in.succinct.beckn.Message;
 import in.succinct.beckn.Order;
 import in.succinct.beckn.Request;
+import in.succinct.beckn.Subscriber;
 import in.succinct.bpp.cabs.adaptor.ECommerceAdaptor;
 import in.succinct.bpp.core.adaptor.CommerceAdaptor;
 import in.succinct.bpp.core.adaptor.NetworkAdaptor;
@@ -20,6 +21,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class Webhook implements Extension {
@@ -57,6 +59,12 @@ public class Webhook implements Extension {
             context.setBppUri(eCommerceAdaptor.getSubscriber().getSubscriberUrl());
             context.setTimestamp(new Date());
             context.setAction("on_status");
+            if (ObjectUtil.isVoid(context.getBapUri())) {
+                List<Subscriber> subscriberList =networkAdaptor.lookup(context.getBapId(), true);
+                if (!subscriberList.isEmpty()){
+                    context.setBapUri(subscriberList.get(0).getSubscriberUrl());
+                }
+            }
             context.setDomain(eCommerceAdaptor.getSubscriber().getDomain());
             //Fill any other attributes needed.
             //Send unsolicited on_status.
