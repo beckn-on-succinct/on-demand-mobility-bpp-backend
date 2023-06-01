@@ -242,8 +242,12 @@ public class BecknUtil {
 
             Agent agent = new Agent();
             fulfillment.setAgent(agent);
-            agent.setName(driver.getLongName());
-            agent.setPhone(driver.getPhoneNumber());
+            agent.getPerson().setName(driver.getLongName());
+            agent.getContact().setPhone(driver.getPhoneNumber());
+            //BC
+
+            agent.set("name",driver.getLongName());
+            agent.set("phone",driver.getPhoneNumber());
         }
 
     }
