@@ -14,6 +14,7 @@ public interface AuthorizedDriver extends Model {
     public Vehicle getVehicle();
 
     @UNIQUE_KEY
+    @PARTICIPANT
     @IS_NULLABLE(false)
     public Long getDriverId();
     public void setDriverId(Long id);

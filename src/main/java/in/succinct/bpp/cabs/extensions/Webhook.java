@@ -1,26 +1,18 @@
 package in.succinct.bpp.cabs.extensions;
 
-import com.venky.core.security.Crypt;
 import com.venky.core.string.StringUtil;
 import com.venky.core.util.ObjectUtil;
 import com.venky.extension.Extension;
 import com.venky.extension.Registry;
 import com.venky.swf.path.Path;
-import com.venky.swf.routing.Config;
 import in.succinct.beckn.Context;
-import in.succinct.beckn.Message;
-import in.succinct.beckn.Order;
 import in.succinct.beckn.Request;
 import in.succinct.beckn.Subscriber;
 import in.succinct.bpp.cabs.adaptor.ECommerceAdaptor;
 import in.succinct.bpp.core.adaptor.CommerceAdaptor;
-import in.succinct.bpp.core.adaptor.NetworkAdaptor;
+import in.succinct.bpp.core.adaptor.api.NetworkApiAdaptor;
+import in.succinct.onet.core.adaptor.NetworkAdaptor;
 
-
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +53,10 @@ public class Webhook implements Extension {
             context.setTimestamp(new Date());
             context.setAction("on_status");
             if (ObjectUtil.isVoid(context.getBapUri())) {
-                List<Subscriber> subscriberList =networkAdaptor.lookup(context.getBapId(), true);
+                List<Subscriber> subscriberList =networkAdaptor.lookup(new Subscriber(){{
+                        setSubscriberId(context.getBapId());
+                        setType(Subscriber.SUBSCRIBER_TYPE_BAP);
+                }}, true);
                 if (!subscriberList.isEmpty()){
                     context.setBapUri(subscriberList.get(0).getSubscriberUrl());
                 }
@@ -73,7 +68,7 @@ public class Webhook implements Extension {
             //Fill any other attributes needed.
             //Send unsolicited on_status.
             context.setMessageId(UUID.randomUUID().toString());
-            networkAdaptor.getApiAdaptor().callback(eCommerceAdaptor,request);
+            ((NetworkApiAdaptor)networkAdaptor.getApiAdaptor()).callback(eCommerceAdaptor,request);
         }
     }
 }

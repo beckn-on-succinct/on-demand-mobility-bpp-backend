@@ -1,15 +1,10 @@
 package in.succinct.bpp.cabs.adaptor;
 
 import com.venky.swf.plugins.beckn.messaging.Subscriber;
-import in.succinct.beckn.Items;
-import in.succinct.beckn.Locations;
-import in.succinct.beckn.Order;
 import in.succinct.beckn.Request;
 import in.succinct.bpp.cabs.BecknUtil;
 import in.succinct.bpp.core.adaptor.CommerceAdaptor;
-import in.succinct.bpp.core.adaptor.FulfillmentStatusAdaptor.FulfillmentStatusAudit;
 
-import java.util.List;
 import java.util.Map;
 
 public class ECommerceAdaptor extends CommerceAdaptor {

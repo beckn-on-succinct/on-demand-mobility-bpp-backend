@@ -11,6 +11,7 @@ import in.succinct.bpp.cabs.db.model.supply.Vehicle;
 import in.succinct.bpp.cabs.db.model.supply.AuthorizedDriver;
 import in.succinct.bpp.cabs.db.model.supply.WorkCalendar;
 
+import java.util.Collections;
 import java.util.List;
 
 public class AuthorizedDriverParticipantExtension extends ParticipantExtension<AuthorizedDriver> {
@@ -22,6 +23,8 @@ public class AuthorizedDriverParticipantExtension extends ParticipantExtension<A
         if (ObjectUtil.equals(fieldName,"VEHICLE_ID")) {
             List<Vehicle> vehicles = DataSecurityFilter.getRecordsAccessible(Vehicle.class,user);
             return DataSecurityFilter.getIds(vehicles);
+        }else if (ObjectUtil.equals(fieldName,"DRIVER_ID")){
+            return Collections.singletonList(user.getId());
         }
         return null;
     }

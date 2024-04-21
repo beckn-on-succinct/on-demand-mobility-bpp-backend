@@ -45,7 +45,7 @@ import in.succinct.beckn.Provider;
 import in.succinct.beckn.Providers;
 import in.succinct.beckn.Quote;
 import in.succinct.beckn.Request;
-import in.succinct.beckn.Tags;
+import in.succinct.beckn.TagGroups;
 import in.succinct.beckn.Tracking;
 import in.succinct.beckn.Vehicle;
 import in.succinct.bpp.cabs.db.model.demand.AllocationOption;
@@ -54,8 +54,6 @@ import in.succinct.bpp.cabs.db.model.demand.TripStop;
 import in.succinct.bpp.cabs.db.model.supply.DeploymentPurpose;
 import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
-import in.succinct.bpp.core.adaptor.api.BecknIdHelper;
-import in.succinct.bpp.core.adaptor.api.BecknIdHelper.Entity;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Timestamp;
@@ -181,11 +179,11 @@ public class BecknUtil {
             item.getDescriptor().setImages(images);
             images.add(Config.instance().getServerBaseUrl() + "/" + purpose.getImageUrl());
         }
-        Tags tags = new Tags();
+        TagGroups tags = new TagGroups();
         for (String tag : login.getAuthorizedDriver().getVehicle().getTagSet()) {
             String[] splits = tag.split(":");
             if (splits.length == 2) {
-                tags.set(splits[0], splits[1]);
+                tags.setTag("general",splits[0], splits[1]);
             }
         }
         item.setTags(tags);
@@ -363,7 +361,7 @@ public class BecknUtil {
 
         Trip trip = Database.getTable(Trip.class).newRecord();
         trip.setScheduledStart(new Timestamp(System.currentTimeMillis()));
-        Tags tags = request.getMessage().getIntent().getTags();
+        TagGroups tags = request.getMessage().getIntent().getTags();
         if (tags != null){
             SortedSet<String> tagSet = new TreeSet<>();
             for (Object k : tags.getInner().keySet()){
@@ -700,7 +698,8 @@ public class BecknUtil {
     }
 
     public void createReplyContext(Request from , Request to){
-        Context newContext = ObjectUtil.clone(from.getContext());
+        Context newContext = new Context();
+        newContext.update(from.getContext());
         String  action = from.getContext().getAction();
 
         if (action.startsWith("get_")){
