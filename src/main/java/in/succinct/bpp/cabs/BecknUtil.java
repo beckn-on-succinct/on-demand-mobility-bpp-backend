@@ -291,7 +291,7 @@ public class BecknUtil {
 
             setCategories(trip, provider, reply.getContext());
             setItems(trip, provider, reply.getContext());
-            order.setItems(provider.getItems());
+            order.setItems(new NonUniqueItems(provider.getItems().getInner()));
             setProviderLocations(trip, provider, reply.getContext());
             setFulfillment(trip, order, reply.getContext());
             setCustomer(trip, order, reply.getContext());

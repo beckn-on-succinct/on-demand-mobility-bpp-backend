@@ -19,7 +19,7 @@ public class AuthorizedDriverParticipantExtension extends ParticipantExtension<A
         registerExtension(new AuthorizedDriverParticipantExtension());
     }
     @Override
-    protected List<Long> getAllowedFieldValues(User user, AuthorizedDriver partiallyFilledModel, String fieldName) {
+    public List<Long> getAllowedFieldValues(User user, AuthorizedDriver partiallyFilledModel, String fieldName) {
         if (ObjectUtil.equals(fieldName,"VEHICLE_ID")) {
             List<Vehicle> vehicles = DataSecurityFilter.getRecordsAccessible(Vehicle.class,user);
             return DataSecurityFilter.getIds(vehicles);
