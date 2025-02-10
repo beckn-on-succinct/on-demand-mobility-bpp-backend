@@ -39,12 +39,14 @@ import in.succinct.beckn.Location;
 import in.succinct.beckn.Locations;
 import in.succinct.beckn.Message;
 import in.succinct.beckn.Order;
+import in.succinct.beckn.Order.NonUniqueItems;
 import in.succinct.beckn.Person;
 import in.succinct.beckn.Price;
 import in.succinct.beckn.Provider;
 import in.succinct.beckn.Providers;
 import in.succinct.beckn.Quote;
 import in.succinct.beckn.Request;
+import in.succinct.beckn.TagGroup;
 import in.succinct.beckn.TagGroups;
 import in.succinct.beckn.Tracking;
 import in.succinct.beckn.Vehicle;
@@ -291,7 +293,9 @@ public class BecknUtil {
 
             setCategories(trip, provider, reply.getContext());
             setItems(trip, provider, reply.getContext());
-            order.setItems(new NonUniqueItems(provider.getItems().getInner()));
+            order.setItems(new NonUniqueItems(){{
+                setInner(provider.getItems().getInner()); 
+            }});
             setProviderLocations(trip, provider, reply.getContext());
             setFulfillment(trip, order, reply.getContext());
             setCustomer(trip, order, reply.getContext());
@@ -364,8 +368,8 @@ public class BecknUtil {
         TagGroups tags = request.getMessage().getIntent().getTags();
         if (tags != null){
             SortedSet<String> tagSet = new TreeSet<>();
-            for (Object k : tags.getInner().keySet()){
-                tagSet.add(String.format("%s:%s",k.toString(),tags.get(k.toString())));
+            for (TagGroup group: tags){
+                tagSet.add(String.format("%s:%s",group.getId(),group.getValue()));
             }
             StringBuilder sTags = new StringBuilder();
             tagSet.forEach(t->{
@@ -499,7 +503,7 @@ public class BecknUtil {
         reply.setMessage(new Message());
         Tracking tracking = new Tracking();
         reply.getMessage().setTracking(tracking);
-        tracking.setStatus(ObjectUtil.equals(trip.getStatus(),Trip.Started)? "active" : "inactive");
+        tracking.setStatus(ObjectUtil.equals(trip.getStatus(),Trip.Started)? Tracking.Status.active : Tracking.Status.inactive);
         tracking.setUrl(Config.instance().getServerBaseUrl()+"/trips/location/"+trip.getId());
     }
     public User ensurePassenger(in.succinct.beckn.User passenger){
