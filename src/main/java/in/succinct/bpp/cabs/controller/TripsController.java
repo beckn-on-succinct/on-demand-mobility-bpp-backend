@@ -2,7 +2,6 @@ package in.succinct.bpp.cabs.controller;
 
 import com.venky.core.security.Crypt;
 import com.venky.geo.GeoCoordinate;
-import com.venky.geo.GeoDistance;
 import com.venky.swf.controller.ModelController;
 import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.controller.annotations.SingleRecordAction;
@@ -23,11 +22,8 @@ import in.succinct.bpp.cabs.db.model.supply.DriverLogin;
 import in.succinct.bpp.cabs.db.model.supply.User;
 import org.json.simple.JSONObject;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class TripsController extends ModelController<Trip> {

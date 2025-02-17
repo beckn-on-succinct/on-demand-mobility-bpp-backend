@@ -9,7 +9,6 @@ import com.venky.core.util.ObjectUtil;
 import com.venky.geo.GeoCoder;
 import com.venky.geo.GeoCoder.GeoAddress;
 import com.venky.geo.GeoCoordinate;
-import com.venky.geo.GeoDistance;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.model.application.Event;
@@ -24,11 +23,8 @@ import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
 import in.succinct.beckn.Context;
 import in.succinct.beckn.Message;
-import in.succinct.beckn.Order;
 import in.succinct.beckn.Order.Status;
-import in.succinct.beckn.Order.Status.StatusConverter;
 import in.succinct.beckn.Request;
-import in.succinct.beckn.State;
 import in.succinct.bpp.cabs.BecknUtil;
 import in.succinct.bpp.cabs.db.model.pricing.TariffCard;
 import in.succinct.bpp.cabs.db.model.service.GeoFencePolicy;
@@ -127,7 +123,7 @@ public class TripImpl extends ModelImpl<Trip> {
                 Trip lastTrip = l.getLastTrip();
                 if (lastTrip != null) {
                     TripStop lastStop = lastTrip.getLastStop();
-                    double distanceToStartLocation = GeoDistance.getDrivingDistanceKms(start.getLat(), start.getLng(), lastStop.getLat(), lastStop.getLng(), Config.instance().getGeoProviderParams());
+                    double distanceToStartLocation = GeoCoder.getInstance().getDrivingDistanceKms(start,lastStop, Config.instance().getGeoProviderParams());
                     double minutesToStartLocation = distanceToStartLocation / Vehicle.AVERAGE_SPEED_PER_MINUTE;
                     availableAt = new Timestamp(DateUtils.addMinutes(availableAt.getTime(), (int) (Math.ceil(minutesToStartLocation + 1))));
                 }
@@ -195,7 +191,7 @@ public class TripImpl extends ModelImpl<Trip> {
     private Map<String,String> getGeoProviderParams(){
         return geoProviderParams;
     }
-    private static GeoCoder  geoCoder = new GeoCoder(Config.instance().getProperty("bpp.cabs.geo.provider","here"));
+    private static GeoCoder  geoCoder = GeoCoder.getInstance();
     private GeoCoder getGeoCoder(){
         return geoCoder;
     }

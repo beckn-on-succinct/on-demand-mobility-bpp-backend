@@ -1,8 +1,8 @@
 package in.succinct.bpp.cabs;
 
 import com.venky.core.util.ObjectUtil;
+import com.venky.geo.GeoCoder;
 import com.venky.geo.GeoCoordinate;
-import com.venky.geo.GeoDistance;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.plugins.collab.db.model.config.City;
@@ -414,7 +414,7 @@ public class BecknUtil {
         endStop.setSequenceNumber(1);
         endStop.setLat(end.getGps().getLat());
         endStop.setLng(end.getGps().getLng());
-        endStop.setDistanceFromLastStop(GeoDistance.getDrivingDistanceKms(startStop.getLat(),startStop.getLng(), endStop.getLat(), endStop.getLng(),Config.instance().getGeoProviderParams()));
+        endStop.setDistanceFromLastStop(GeoCoder.getInstance().getDrivingDistanceKms(startStop, endStop,Config.instance().getGeoProviderParams()));
         endStop.setEstimatedMinutesFromLastStop((int)Math.ceil(endStop.getDistanceFromLastStop() * 60 /40)); //TODO 40 km/hr average hardcoded!! Need tfix this.(May be with analytics)
         endStop.save();
 
