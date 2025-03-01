@@ -425,12 +425,11 @@ public class TripImpl extends ModelImpl<Trip> {
     }
 
     static final Map<Status,String> statusLiteralMap = new HashMap<Status,String>(){{
-        put(Status.Awaiting_Agent_Acceptance ,"Awaiting Driver acceptance");
-        put(Status.Reaching_Pickup_Location,"Reaching Pickup location");
-        put(Status.Reached_Pickup_Location,"Reached Pickup location");
         put(Status.Created,"Not Confirmed");
-        put(Status.Accepted,"Confirmed");
-        put(Status.In_progress,"Started");
+        put(Status.Awaiting_Acceptance ,"Awaiting Driver acceptance");
+        put(Status.Accepted,"Reaching Pickup location");
+        put(Status.Prepared,"Reached Pickup location");
+        put(Status.In_Transit,"Started");
         put(Status.Completed,"Ended");
         put(Status.Cancelled,"Cancelled");
     }};

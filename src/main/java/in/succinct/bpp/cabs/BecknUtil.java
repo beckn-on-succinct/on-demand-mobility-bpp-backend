@@ -221,8 +221,8 @@ public class BecknUtil {
     public void setFulfillment(Trip trip,Fulfillment fulfillment,Context context){
         FulfillmentStop start = new FulfillmentStop();
         FulfillmentStop end = new FulfillmentStop();
-        fulfillment.setStart(start);
-        fulfillment.setEnd(end);
+        fulfillment._setStart(start);
+        fulfillment._setEnd(end);
 
         List<TripStop> stops = trip.getTripStops();
 
@@ -284,7 +284,7 @@ public class BecknUtil {
     public Order getBecknOrder(Trip trip, Request reply){
         Order order = new in.succinct.beckn.boc.Order(); //TOFO FIX newwork hard code
         order.setId(getBecknId(trip.getId(),Entity.order,reply.getContext()));
-        order.setState(trip.getBecknOrderStatus());
+        order.setStatus(trip.getBecknOrderStatus());
 
         if (trip.getDriverLoginId() != null) {
             Provider provider = new Provider();
@@ -360,8 +360,8 @@ public class BecknUtil {
 
     public void search(Request request,Request reply){
 
-        Location start = request.getMessage().getIntent().getFulfillment().getStart().getLocation();
-        Location end = request.getMessage().getIntent().getFulfillment().getEnd().getLocation();
+        Location start = request.getMessage().getIntent().getFulfillment()._getStart().getLocation();
+        Location end = request.getMessage().getIntent().getFulfillment()._getEnd().getLocation();
 
         Trip trip = Database.getTable(Trip.class).newRecord();
         trip.setScheduledStart(new Timestamp(System.currentTimeMillis()));
