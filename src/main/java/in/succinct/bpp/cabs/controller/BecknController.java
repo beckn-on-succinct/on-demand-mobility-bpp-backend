@@ -110,12 +110,4 @@ public class BecknController extends Controller {
         return new BytesView(getPath(),reply.toString().getBytes(StandardCharsets.UTF_8),MimeType.APPLICATION_JSON);
 
     }
-    protected View no_content(){
-        return new BytesView(getPath(),new byte[]{}, MimeType.APPLICATION_JSON){
-            @Override
-            public void write() throws IOException {
-                super.write(HttpServletResponse.SC_NO_CONTENT);
-            }
-        };
-    }
 }
